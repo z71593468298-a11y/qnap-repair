@@ -1,0 +1,1872 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QNAP 板卡維修</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chart.js DataLabels Plugin -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0"></script>
+    <!-- SheetJS (Excel Parsing) -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <!-- html2pdf.js (PDF 匯出) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        // 灰白風格調
+                        'ocean-primary': '#374151',
+                        'ocean-accent': '#6b7280',
+                        'ocean-bg': '#f3f4f6',
+                        sky: {
+                            50: '#f9fafb', 100: '#f3f4f6', 200: '#e5e7eb', 300: '#d1d5db',
+                            400: '#9ca3af', 500: '#6b7280', 600: '#4b5563', 700: '#374151',
+                            800: '#1f2937', 900: '#111827',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html { 
+            font-size: 18px; 
+            overflow-x: hidden; /* 防止整個網頁橫向捲動 */
+            max-width: 100vw;
+        }
+
+        :root {
+            --base-color: #f3f4f6;
+            --shadow-light: #ffffff;
+            --shadow-dark: #d1d5db;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            background-color: var(--base-color); 
+            color: #334155;
+            overflow-x: hidden; /* 防止整個網頁橫向捲動 */
+            max-width: 100vw;
+        }
+        
+        ::-webkit-scrollbar { width: 10px; height: 10px; }
+        ::-webkit-scrollbar-track { background: var(--base-color); border-radius: 5px; box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); }
+        ::-webkit-scrollbar-thumb { background: #9ca3af; border-radius: 5px; border: 2px solid var(--base-color); }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        .tabs-scrollbar::-webkit-scrollbar { height: 8px; }
+
+        /* ======== 3D 元件核心樣式 ======== */
+        .section-card { 
+            background: linear-gradient(145deg, #ffffff, #e5e7eb); 
+            border-radius: 20px; 
+            box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light); 
+            padding: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .chart-3d-container {
+            background: linear-gradient(145deg, #ffffff, #e5e7eb);
+            border-radius: 16px;
+            box-shadow: 6px 6px 12px var(--shadow-dark), -6px -6px 12px var(--shadow-light);
+            border: 1px solid rgba(255,255,255,0.6);
+        }
+
+        .header-3d {
+            background: var(--base-color);
+            box-shadow: 0 10px 20px rgba(209, 213, 219, 0.6);
+            border-bottom: 2px solid var(--shadow-light);
+        }
+
+        .btn-3d-white {
+            background: linear-gradient(145deg, #ffffff, #f3f4f6); color: #374151;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            border: 1px solid #ffffff; transition: all 0.2s ease; font-weight: 700; cursor: pointer; outline: none;
+        }
+        .btn-3d-white:hover { color: #1f2937; }
+        .btn-3d-white:active { box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); transform: translateY(2px); }
+
+        .btn-3d-primary {
+            background: linear-gradient(145deg, #6b7280, #374151); color: white;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            border-top: 1px solid #9ca3af; border-left: 1px solid #9ca3af;
+            transition: all 0.2s ease; font-weight: 700; cursor: pointer; outline: none;
+        }
+        .btn-3d-primary:active { box-shadow: inset 4px 4px 8px #1f2937, inset -4px -4px 8px #4b5563; transform: translateY(2px); border: none; }
+
+        .btn-3d-danger {
+            background: linear-gradient(145deg, #f43f5e, #e11d48); color: white;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            border-top: 1px solid #fb7185; border-left: 1px solid #fb7185;
+            transition: all 0.2s ease; font-weight: 700; cursor: pointer; outline: none;
+        }
+        .btn-3d-danger:active { box-shadow: inset 4px 4px 8px #be123c, inset -4px -4px 8px #f43f5e; transform: translateY(2px); border: none; }
+
+        .btn-3d-secondary {
+            background: linear-gradient(145deg, #14b8a6, #0f766e); color: white;
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            border-top: 1px solid #2dd4bf; border-left: 1px solid #2dd4bf;
+            transition: all 0.2s ease; font-weight: 700; cursor: pointer; outline: none;
+        }
+        .btn-3d-secondary:active { box-shadow: inset 4px 4px 8px #0f766e, inset -4px -4px 8px #14b8a6; transform: translateY(2px); border: none; }
+
+        .input-3d {
+            background: var(--base-color); border: none !important;
+            box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light);
+            border-radius: 12px; transition: all 0.2s; color: #0f172a;
+        }
+        .input-3d:focus { box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light), 0 0 0 2px #6b7280; outline: none; }
+
+        .tab-btn {
+            background: linear-gradient(145deg, #ffffff, #f3f4f6);
+            box-shadow: 4px 4px 8px var(--shadow-dark), -4px -4px 8px var(--shadow-light);
+            border-radius: 12px; margin-right: 0.75rem; margin-bottom: 0.5rem;
+            border: 1px solid #ffffff; padding: 0.6rem 1.5rem; color: #64748b;
+            font-weight: 700; transition: all 0.2s ease; cursor: pointer; outline: none; white-space: nowrap;
+        }
+        .tab-btn.active { background: var(--base-color); box-shadow: inset 4px 4px 8px var(--shadow-dark), inset -4px -4px 8px var(--shadow-light); color: #374151; border: 1px solid transparent; }
+        .tab-btn:not(.active):active { transform: translateY(2px); }
+
+        .badge-3d {
+            background: linear-gradient(145deg, #6b7280, #374151);
+            box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);
+            border-top: 1px solid #9ca3af; border-left: 1px solid #9ca3af;
+            color: white; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center;
+        }
+
+        .table-container-3d {
+            border-radius: 16px; background: var(--base-color);
+            box-shadow: inset 6px 6px 12px var(--shadow-dark), inset -6px -6px 12px var(--shadow-light);
+            padding: 0px; overflow: hidden; transform: translateZ(0);
+        }
+        .table-3d { width: 100%; border-collapse: collapse; }
+        .table-3d thead th {
+            background: var(--base-color); color: #374151; font-weight: 800; text-align: left;
+            padding: 16px; border-bottom: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 4px 6px -6px var(--shadow-dark); z-index: 20;
+        }
+        .table-3d tbody tr { border-bottom: 1px solid rgba(255,255,255,0.4); transition: background 0.2s; }
+        .table-3d tbody tr:hover { background: rgba(255,255,255,0.5); }
+        .table-3d tbody td { padding: 12px 16px; color: #334155; font-weight: 500; }
+
+        .list-item-3d {
+            background: linear-gradient(145deg, #ffffff, #f3f4f6); border-radius: 16px;
+            box-shadow: 5px 5px 10px var(--shadow-dark), -5px -5px 10px var(--shadow-light);
+            border: 1px solid #ffffff; padding: 1.25rem; margin-bottom: 1rem;
+            display: flex; align-items: flex-start; gap: 1rem; transition: all 0.3s ease;
+        }
+        .list-item-3d:hover { box-shadow: inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light); border: 1px solid transparent; }
+
+        .modal-3d { background: var(--base-color); border-radius: 24px; box-shadow: 20px 20px 40px rgba(0,0,0,0.2), -10px -10px 20px rgba(255,255,255,0.5); border: 2px solid var(--shadow-light); }
+        .modal-header-3d { background: linear-gradient(145deg, #ffffff, #e5e7eb); box-shadow: 0 4px 10px -2px var(--shadow-dark); border-radius: 22px 22px 0 0; z-index: 10; }
+
+        .toast-hide { transform: translateY(100%); opacity: 0; }
+
+        /* ======== 手機強制橫向模式 ======== */
+        @media screen and (max-width: 768px) {
+            html.force-landscape-mode-html {
+                overflow: hidden !important;
+                width: 100vw;
+                height: 100vh;
+            }
+            body.force-landscape-mode {
+                width: 100vh !important;
+                height: 100vw !important;
+                min-height: 100vw !important;
+                transform: rotate(90deg) !important;
+                transform-origin: top left !important;
+                position: absolute !important;
+                top: 0 !important;
+                left: 100vw !important;
+                overflow-x: hidden !important;
+                overflow-y: auto !important;
+                margin: 0 !important;
+            }
+        }
+
+        /* ======== 列印設定 ======== */
+        @media print {
+            @page { size: A4 portrait; margin: 10mm; }
+            body { background-color: #ffffff; color: #000000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            main { display: block !important; padding-top: 0 !important; }
+            .no-print { display: none !important; }
+            
+            header { 
+                background: #ffffff !important; color: #000000 !important; border-bottom: 2px solid #374151; 
+                box-shadow: none !important; position: static !important; padding: 0 0 5px 0 !important;
+                margin-bottom: 5px !important; break-after: avoid !important; page-break-after: avoid !important;
+            }
+            header h1 { color: #374151 !important; font-size: 1.25rem !important; }
+            
+            .section-card, .chart-3d-container, .input-3d, .btn-3d-white, .btn-3d-primary, .btn-3d-danger, .btn-3d-secondary, .table-container-3d, .list-item-3d, .modal-3d, .header-3d, .badge-3d {
+                box-shadow: none !important; background: white !important; border: 1px solid #e5e7eb !important;
+                color: black !important; transform: none !important;
+            }
+
+            .section-card { break-inside: avoid !important; page-break-inside: avoid !important; margin-bottom: 5px !important; padding: 10px !important; display: block !important; }
+            .print\:break-inside-avoid { break-inside: avoid !important; page-break-inside: avoid !important; break-before: avoid !important; page-break-before: avoid !important; }
+            
+            main > section.section-card { break-before: page !important; page-break-before: always !important; }
+            #section4 { break-inside: auto !important; page-break-inside: auto !important; }
+            .grid > div, .relative.min-h-\[500px\] { break-inside: avoid !important; page-break-inside: avoid !important; padding: 5px !important; }
+            
+            .min-h-[350px] { min-height: 150px !important; }
+            canvas { max-height: 150px !important; width: 100% !important; }
+            
+            #sec3BarChart { break-after: page !important; page-break-after: always !important; display: block !important; }
+            .min-h-[500px] { min-height: 0 !important; } 
+            #barChartWrapper { min-height: 200mm !important; height: 200mm !important; padding-bottom: 0 !important; }
+            canvas#barChart { max-height: 200mm !important; width: 100% !important; }
+            
+            #sec3Suggestions { break-before: page !important; page-break-before: always !important; display: block !important; }
+            #suggestionsContainer ul { max-height: none !important; overflow: visible !important; }
+            
+            .grid-cols-1.md\:grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 5px !important; }
+            .overflow-x-auto, .overflow-y-auto { max-height: none !important; overflow: visible !important; }
+            #tableScrollContainer { height: auto !important; position: static !important; overflow: visible !important; }
+            
+            .table-3d { width: 100% !important; min-width: 100% !important; max-width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+            .table-3d thead { display: table-header-group; position: static !important; }
+            .table-3d th { position: static !important; border-bottom: 2px solid #374151 !important; box-shadow: none !important; background: #f3f4f6 !important; color: #1f2937 !important; }
+            .table-3d th, .table-3d td { 
+                font-size: 8.5px !important; padding: 4px 2px !important; white-space: normal !important; 
+                word-wrap: break-word !important; word-break: break-all !important; overflow-wrap: anywhere !important; vertical-align: top;
+            }
+            .whitespace-nowrap { white-space: normal !important; }
+            .table-3d tr { break-inside: avoid !important; page-break-inside: avoid !important; }
+            tr.no-print { display: none !important; }
+            #modelDropdownMenu { display: none !important; }
+            canvas#techNetworkCanvas { display: none !important; }
+        }
+
+        /* ======== PDF 匯出專用模式 ======== */
+        body.pdf-mode {
+            background-color: #ffffff !important; color: #000000 !important;
+            width: 1200px !important; max-width: 1200px !important; margin: 0 auto !important; padding: 0 !important;
+            overflow: visible !important; display: block !important; height: auto !important;
+        }
+
+        body.pdf-mode main {
+            display: block !important; width: 100% !important; max-width: 100% !important;
+            margin: 0 auto !important; padding-left: 20px !important; padding-right: 20px !important;
+            padding-top: 0 !important; box-sizing: border-box !important;
+        }
+
+        body.pdf-mode section { display: block !important; }
+        body.pdf-mode .no-print { display: none !important; }
+        body.pdf-mode #toastContainer { display: none !important; }
+        body.pdf-mode canvas#techNetworkCanvas { display: none !important; }
+
+        /* 平面化所有元件 */
+        body.pdf-mode .section-card, body.pdf-mode .chart-3d-container, body.pdf-mode .table-container-3d,
+        body.pdf-mode .input-3d, body.pdf-mode .badge-3d, body.pdf-mode .btn-3d-white, body.pdf-mode .btn-3d-primary,
+        body.pdf-mode .btn-3d-secondary, body.pdf-mode .btn-3d-danger, body.pdf-mode .list-item-3d, body.pdf-mode .header-3d {
+            box-shadow: none !important; background: white !important; border: 1px solid #d1d5db !important;
+            color: #1f2937 !important; transform: none !important;
+        }
+        body.pdf-mode .badge-3d { background: #f3f4f6 !important; border: 1px solid #9ca3af !important; }
+
+        /* 區塊一簡化顯示 */
+        body.pdf-mode .print\:hidden { display: none !important; }
+        body.pdf-mode #modelSelectIcon { display: none !important; }
+        body.pdf-mode #customModelSelect { padding: 0 !important; background: transparent !important; border: none !important; }
+
+        /* 斷開群組限制讓高度計算精準 */
+        body.pdf-mode .print\:break-inside-avoid { display: contents !important; }
+        
+        body.pdf-mode #section1 { margin-bottom: 0 !important; border-bottom: none !important; }
+
+        /* 區塊三背景透明化，避免重疊框線 */
+        body.pdf-mode #section3 {
+            background: transparent !important; border: none !important; padding: 0 !important;
+            margin-top: 15px !important; margin-bottom: 0 !important;
+            break-before: auto !important; page-break-before: auto !important;
+        }
+
+        /* 斷頁控制：維修問題點建議、維修紀錄強制新頁 */
+        body.pdf-mode #sec3Suggestions,
+        body.pdf-mode #section4 {
+            break-before: page !important;
+            page-break-before: always !important;
+            margin-top: 0 !important; 
+            padding-top: 15px !important;
+        }
+
+        /* 隱藏區塊五 */
+        body.pdf-mode #section5 { display: none !important; }
+
+        body.pdf-mode header {
+            border-bottom: 2px solid #374151 !important; padding: 10px 0 !important;
+            margin-bottom: 10px !important; display: block !important;
+        }
+        body.pdf-mode header h1 { color: #374151 !important; font-size: 1.5rem !important; border: none !important; }
+
+        body.pdf-mode .section-card { margin-bottom: 20px !important; padding: 15px !important; break-inside: auto !important; page-break-inside: auto !important; }
+        body.pdf-mode .chart-3d-container { break-inside: avoid !important; page-break-inside: avoid !important; }
+
+        body.pdf-mode .min-h-[350px] { min-height: 150px !important; }
+        body.pdf-mode canvas { max-height: 150px !important; width: 100% !important; }
+
+        body.pdf-mode #sec3Content { gap: 15px !important; display: block !important; }
+        body.pdf-mode #sec3BarChart { display: block !important; min-height: auto !important; height: auto !important; margin-bottom: 0 !important; }
+        body.pdf-mode #barChartWrapper { min-height: 80mm !important; height: 80mm !important; padding-bottom: 0 !important; }
+        body.pdf-mode canvas#barChart { max-height: 80mm !important; width: 100% !important; }
+        body.pdf-mode #sec3Suggestions { display: block !important; }
+        body.pdf-mode #suggestionsContainer ul { max-height: none !important; overflow: visible !important; }
+
+        body.pdf-mode .grid-cols-1.md\:grid-cols-2 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 10px !important; }
+        body.pdf-mode .overflow-x-auto, body.pdf-mode .overflow-y-auto { max-height: none !important; overflow: visible !important; }
+        body.pdf-mode #tableScrollContainer { height: auto !important; position: static !important; overflow: visible !important; }
+
+        body.pdf-mode .table-3d { width: 100% !important; min-width: 100% !important; max-width: 100% !important; table-layout: fixed !important; border-collapse: collapse !important; }
+        body.pdf-mode .table-3d thead { display: table-header-group; position: static !important; }
+        body.pdf-mode .table-3d th { position: static !important; border-bottom: 2px solid #374151 !important; box-shadow: none !important; background: #f3f4f6 !important; color: #1f2937 !important; }
+        body.pdf-mode .table-3d th, body.pdf-mode .table-3d td {
+            font-size: 8.5px !important; padding: 5px 3px !important; white-space: normal !important;
+            word-wrap: break-word !important; word-break: break-all !important; overflow-wrap: anywhere !important; vertical-align: top !important;
+        }
+        body.pdf-mode .table-3d tbody td { border-bottom: 1px solid #e5e7eb !important; }
+        body.pdf-mode .whitespace-nowrap { white-space: normal !important; }
+        body.pdf-mode tr.hidden.print\:table-row { display: table-row !important; }
+        body.pdf-mode #modelDropdownMenu { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen relative w-full">
+
+    <!-- 科技網格連線背景 (Tech Network Particles) -->
+    <canvas id="techNetworkCanvas" class="fixed top-0 left-0 w-full h-full z-[-1] pointer-events-none no-print opacity-60"></canvas>
+
+    <header class="header-3d sticky top-0 left-0 w-full z-50 print:pb-2 print:pt-0">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 print:py-1 flex flex-col sm:flex-row justify-between items-center gap-4 print:gap-2">
+            <div class="flex items-center gap-4">
+                <div class="badge-3d w-10 h-10 shadow-md">
+                    <i data-lucide="waves" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-extrabold tracking-tight text-ocean-primary drop-shadow-sm print:text-xl">QNAP 板卡維修</h1>
+                    <p class="text-sky-600 text-sm font-bold flex items-center gap-2 print:hidden">
+                        Repair Data Analysis System
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-4 no-print">
+                <div id="clockDisplay" class="input-3d font-mono px-4 py-2 rounded-xl text-md font-bold text-ocean-primary hidden sm:block border border-white/50"></div>
+                <button onclick="exportToPDF()" class="btn-3d-white px-4 py-2.5 rounded-xl text-sm flex items-center gap-2" title="將畫面匯出成 PDF (A4 置中版)">
+                    <i data-lucide="file-down" class="w-5 h-5"></i>匯出 PDF
+                </button>
+                <button onclick="window.print()" class="btn-3d-white px-4 py-2.5 rounded-xl text-sm flex items-center gap-2">
+                    <i data-lucide="printer" class="w-5 h-5"></i>列印報表
+                </button>
+                <button onclick="confirmClearImportData()" class="btn-3d-danger px-4 py-2.5 rounded-xl text-sm flex items-center gap-2" title="僅清除匯入的資料，保留手動新增">
+                    <i data-lucide="trash-2" class="w-5 h-5"></i>清除匯入
+                </button>
+                <label for="excelUpload" class="cursor-pointer btn-3d-primary px-5 py-2.5 rounded-xl text-sm flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>匯入 Excel
+                </label>
+                <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" class="hidden">
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col gap-8">
+        <div class="print:break-inside-avoid w-full">
+            <!-- (1) Control Panel: Filters -->
+            <section id="section1" class="section-card flex flex-col md:flex-row items-center justify-between gap-4 print:mb-2 print:p-3 relative z-40 w-full">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1 w-full md:w-auto relative" id="modelSelectContainer">
+                    <div class="flex items-center gap-2 shrink-0">
+                        <label class="text-lg font-extrabold text-sky-900 drop-shadow-sm flex items-center gap-2">
+                            <div class="badge-3d w-8 h-8 !bg-rose-500 !border-rose-400 shadow-sm"><i data-lucide="server" class="w-4 h-4 text-white"></i></div>
+                            選擇機種
+                        </label>
+                    </div>
+                    <div class="flex items-center gap-3 w-full max-w-xl">
+                        <div class="relative shrink-0 w-[120px] sm:w-[150px] print:hidden">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-4 h-4 text-sky-500"></i></div>
+                            <input type="text" id="seriesSearchInput" placeholder="搜系列(如 TS)" class="w-full input-3d pl-9 p-3 text-sm font-bold text-sky-900 border border-white/50 focus:ring-ocean-accent focus:ring-2 transition-all" oninput="searchSeries()" onclick="openModelMenu()">
+                        </div>
+                        <div class="relative flex-1">
+                            <div id="customModelSelect" class="w-full input-3d p-3 text-base font-black text-ocean-primary focus:ring-2 focus:ring-ocean-accent border border-white/50 cursor-pointer flex justify-between items-center transition-all" onclick="toggleModelMenu(event)">
+                                <span id="selectedModelText" class="truncate">載入中...</span>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-sky-500 drop-shadow-sm transition-transform duration-300" id="modelSelectIcon"></i>
+                            </div>
+                            <div id="modelDropdownMenu" class="absolute left-0 top-full mt-3 w-[320px] sm:w-[500px] md:w-[750px] max-w-[85vw] z-[100] bg-[var(--base-color)] rounded-2xl shadow-[10px_10px_30px_rgba(0,0,0,0.15),-10px_-10px_30px_rgba(255,255,255,0.8)] border border-white/60 hidden flex-col max-h-[65vh] overflow-y-auto p-5 opacity-0 transition-opacity duration-200 pointer-events-auto print:hidden">
+                                <div id="modelMenuContent" class="flex flex-col gap-5 relative"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="text-sm text-slate-500 input-3d px-6 py-3 flex items-center justify-center gap-3 font-bold border border-white/50 shrink-0 w-full md:w-auto mt-2 md:mt-0">
+                    目前顯示筆數 <span class="badge-3d px-3 py-1 text-base font-black" id="totalCount">0</span> 筆
+                </div>
+            </section>
+
+            <!-- (2) Global Charts Section -->
+            <section id="section2" class="section-card print:mb-2 print:p-3 w-full">
+                <h2 class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 mb-6 pb-2 border-b-2 border-white drop-shadow-sm print:mb-2 print:pb-1">
+                    <span class="badge-3d w-8 h-8 font-black no-print">2</span>維修數據(全)
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 mb-2 print:gap-4 w-full">
+                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full">
+                        <h3 class="text-sm font-bold text-center text-sky-800 mb-4 input-3d py-2 w-3/4 mx-auto border border-white/40 print:mb-1 print:py-1">機種佔比(前十)</h3>
+                        <div class="flex-1 relative w-full"><canvas id="pieChartModels"></canvas></div>
+                    </div>
+                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full">
+                        <h3 class="text-sm font-bold text-center text-sky-800 mb-4 input-3d py-2 w-3/4 mx-auto border border-white/40 print:mb-1 print:py-1">損壞原因(前十)</h3>
+                        <div class="flex-1 relative w-full"><canvas id="pieChartAllReasons"></canvas></div>
+                    </div>
+                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full">
+                        <h3 class="text-sm font-bold text-center text-sky-800 mb-4 input-3d py-2 w-3/4 mx-auto border border-white/40 print:mb-1 print:py-1">維修代碼(前十)</h3>
+                        <div class="flex-1 relative w-full"><canvas id="pieChartRepairDesc"></canvas></div>
+                    </div>
+                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full">
+                        <h3 class="text-sm font-bold text-center text-sky-800 mb-4 input-3d py-2 w-3/4 mx-auto border border-white/40 print:mb-1 print:py-1">產品類別</h3>
+                        <div class="flex-1 relative w-full"><canvas id="pieChartCategory"></canvas></div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- (3) Suggestions & Detail Charts Section -->
+        <section id="section3" class="section-card print:p-0 print:border-none print:shadow-none print:bg-none w-full">
+            <h2 class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 mb-4 drop-shadow-sm print:hidden">
+                <span class="badge-3d w-8 h-8 font-black no-print">3</span>
+                <span id="suggestionTitleModel" class="text-ocean-accent input-3d px-3 py-1 text-lg">未選取</span> 維修方向與問題點
+            </h2>
+            <div class="flex gap-3 mb-6 no-print px-2 overflow-x-auto tabs-scrollbar pb-3 pt-2">
+                <button class="tab-btn tab-btn-sec3 active" data-cat="MB">MB</button>
+                <button class="tab-btn tab-btn-sec3" data-cat="BP">BP</button>
+                <button class="tab-btn tab-btn-sec3" data-cat="Switch">Switch</button>
+                <button class="tab-btn tab-btn-sec3" data-cat="Router">Router</button>
+                <button class="tab-btn tab-btn-sec3" data-cat="RAM">RAM</button>
+                <button class="tab-btn tab-btn-sec3" data-cat="HDD">HDD</button>
+                <button class="tab-btn tab-btn-sec3" data-cat="LAN card">LAN card</button>
+            </div>
+            <div id="sec3Content" class="flex flex-col gap-8 print:gap-0 print:block w-full">
+                <!-- Bar Chart -->
+                <div id="sec3BarChart" class="relative min-h-[500px] flex flex-col chart-3d-container p-6 print:p-2 print:border-none print:shadow-none print:bg-none w-full">
+                    <h3 class="text-sm font-bold text-center text-sky-900 mb-6 input-3d py-3 border border-white/50 print:text-lg print:border-none print:bg-transparent print:shadow-none print:mb-2">
+                        單一型號 <span id="barChartTitleModel" class="text-ocean-primary font-black underline decoration-2 mx-1">未選取</span> 
+                        (<span id="barChartTitleCat" class="text-ocean-accent font-black">MB</span>) 原因分佈
+                    </h3>
+                    <div class="flex-1 w-full overflow-x-auto overflow-y-hidden pb-2 print:overflow-visible">
+                        <div id="barChartWrapper" class="relative h-full min-h-[420px] pb-8 min-w-full">
+                            <canvas id="barChart"></canvas>
+                            <div id="barChartButtonsContainer" class="absolute top-0 left-0 w-full h-full pointer-events-none no-print"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Suggestions List -->
+                <div id="sec3Suggestions" class="chart-3d-container p-6 print:p-2 print:mt-0 print:pt-4 print:border-none print:shadow-none print:bg-none w-full">
+                    
+                    <div class="flex justify-between items-start mb-6 pb-3 border-b-2 border-white relative w-full">
+                        <h3 class="text-lg font-extrabold text-ocean-primary flex items-center gap-3 print:text-xl print:border-ocean-primary flex-wrap w-full">
+                            <div class="badge-3d w-8 h-8 no-print"><i data-lucide="list-checks" class="w-4 h-4"></i></div>
+                            維修問題點 (<span id="suggTitleCat" class="text-ocean-accent">MB</span>)
+                            
+                            <!-- 點擊展開的提示按鈕區塊 -->
+                            <div class="ml-auto relative no-print">
+                                <button onclick="toggleTop3Tips()" id="top3TipBtn" class="text-white text-sm md:text-base font-black drop-shadow-sm tracking-wide bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 transition-all px-4 py-2 rounded-xl shadow-[4px_4px_8px_var(--shadow-dark),-4px_-4px_8px_var(--shadow-light)] active:shadow-inner flex items-center gap-2 hidden">
+                                    <i data-lucide="zap" class="w-4 h-4"></i> 初步檢修可嘗試
+                                </button>
+                                
+                                <!-- 隱藏的下拉提示框 -->
+                                <div id="top3TipsPopup" class="hidden absolute right-0 top-full mt-3 w-80 bg-[var(--base-color)] border border-white/80 shadow-[10px_10px_30px_rgba(0,0,0,0.15),-5px_-5px_15px_rgba(255,255,255,0.7)] rounded-2xl p-5 z-50 transform origin-top-right transition-all max-h-[60vh] overflow-y-auto">
+                                    <h4 class="text-sm font-extrabold text-sky-900 mb-3 border-b-2 border-white pb-2 flex items-center gap-2 sticky top-0 bg-[var(--base-color)] z-10">
+                                        <i data-lucide="flame" class="w-4 h-4 text-rose-500"></i> Top 3 初步排除方向統計
+                                    </h4>
+                                    <div id="top3TipsContent" class="flex flex-col gap-3"></div>
+                                </div>
+                            </div>
+                        </h3>
+                    </div>
+
+                    <div id="suggestionsContainer" class="text-slate-600 w-full">
+                        <p class="text-center py-8 font-bold text-sky-600 input-3d mx-auto max-w-md">目前尚無資料</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- (4) Records Table -->
+        <section id="section4" class="section-card flex-1 flex flex-col w-full">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 print:hidden">
+                <h2 class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 drop-shadow-sm">
+                    <span class="badge-3d w-8 h-8 font-black no-print">4</span>維修紀錄                
+                </h2>
+                <div class="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 no-print">
+                    <div class="flex items-center gap-3">
+                        <button onclick="openAddModal()" class="btn-3d-primary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> 新增</button>
+                        <button onclick="openManageCustomModal()" class="btn-3d-secondary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4"></i> 行事曆管理</button>
+                        <button onclick="confirmClearCustomData()" class="btn-3d-white text-rose-500 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2"><i data-lucide="rotate-ccw" class="w-4 h-4"></i> 重置</button>
+                    </div>
+                    <div class="relative flex-1 sm:w-64 mt-3 sm:mt-0">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-5 h-5 text-sky-500"></i></div>
+                        <input type="text" id="searchInput" placeholder="搜尋序號..." class="w-full input-3d pl-10 p-3 text-sm text-sky-900 font-bold border border-white/50">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 mb-5 no-print px-2 overflow-x-auto tabs-scrollbar pb-3 pt-2 mt-2 md:mt-0">
+                <button class="tab-btn tab-btn-sec4 active" data-cat="MB">MB</button>
+                <button class="tab-btn tab-btn-sec4" data-cat="BP">BP</button>
+                <button class="tab-btn tab-btn-sec4" data-cat="Switch">Switch</button>
+                <button class="tab-btn tab-btn-sec4" data-cat="Router">Router</button>
+                <button class="tab-btn tab-btn-sec4" data-cat="RAM">RAM</button>
+                <button class="tab-btn tab-btn-sec4" data-cat="HDD">HDD</button>
+                <button class="tab-btn tab-btn-sec4" data-cat="LAN card">LAN card</button>
+            </div>
+
+            <div id="tableScrollContainer" class="table-container-3d overflow-x-auto overflow-y-auto max-h-[280px] print:max-h-none print:overflow-visible print:border-none print:shadow-none w-full">
+                <table class="table-3d min-w-max relative w-full">
+                    <thead class="sticky top-0 z-20 bg-[var(--base-color)] print:static print:bg-white shadow-sm">
+                        <tr class="hidden print:table-row bg-white">
+                            <th colspan="14" class="px-4 py-3 text-left border-b-2 border-ocean-primary">
+                                <div class="flex items-center gap-2 text-lg font-bold text-ocean-primary">
+                                    <span class="bg-ocean-primary text-white w-6 h-6 rounded-full flex items-center justify-center text-sm">4</span>
+                                    維修紀錄 <span id="printTitleModel" class="text-ocean-accent ml-2 text-base"></span>
+                                </div>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">收件日期</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">送回日期</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">類型</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">送修單號</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">型號</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">分類</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">序號</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">DOA/RMA原因</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">原因代碼描述</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">分析結果</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">維修代碼描述</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">零件位置</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">零件料號</th>
+                            <th scope="col" class="whitespace-nowrap uppercase tracking-wider">維修註記</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsTableBody">
+                        <tr><td colspan="14" class="px-6 py-10 text-center font-bold text-sky-600 input-3d m-4 block">目前尚無資料</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- (5) Reference Info -->
+        <section id="section5" class="section-card w-full">
+            <h2 class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 mb-6 pb-2 border-b-2 border-white drop-shadow-sm">
+                <span class="badge-3d w-8 h-8 font-black no-print">5</span>Intel 主機板常見 Q-CODE 參考指南
+            </h2>
+            <div class="table-container-3d overflow-x-auto w-full">
+                <table class="table-3d min-w-full">
+                    <thead><tr><th class="w-24 whitespace-nowrap uppercase tracking-wider">Q-CODE</th><th class="w-1/3 whitespace-nowrap uppercase tracking-wider">狀態 / 故障說明</th><th class="whitespace-nowrap uppercase tracking-wider">常見除錯方向</th></tr></thead>
+                    <tbody>
+                        <tr><td class="font-mono font-black text-sky-600 text-lg">00</td><td class="font-bold">CPU 錯誤 / 未偵測到 CPU</td><td class="text-sm">檢查 CPU 是否正確安裝、底部接點有無髒汙或斷針、EPS 12V 供電是否接上、CPU 供電模組是否短路。</td></tr>
+                        <tr><td class="font-mono font-black text-sky-600 text-lg">53 / 55</td><td class="font-bold">記憶體初始化錯誤</td><td class="text-sm">重插記憶體、使用橡皮擦清理金手指、測試單根記憶體。若仍報錯，需檢查 CPU Socket 腳座針腳是否彎曲變形。</td></tr>
+                        <tr><td class="font-mono font-black text-cyan-600 text-lg">62</td><td class="font-bold">PCH 執行階段服務安裝</td><td class="text-sm">通常與 PCIe 裝置或顯示卡(VGA)有關。請檢查 PCIe 插槽接觸狀態、顯示卡輔助供電是否正常，或重新插拔顯示卡。</td></tr>
+                        <tr><td class="font-mono font-black text-cyan-600 text-lg">99</td><td class="font-bold">Super IO 初始化</td><td class="text-sm">常見於 I/O 周邊卡住。檢查主機板上的風扇接頭、前置 USB 設備、鍵盤滑鼠，或是 PCIe 擴充卡是否短路或異常。</td></tr>
+                        <tr><td class="font-mono font-black text-teal-600 text-lg">A0 / A2</td><td class="font-bold">IDE / SATA 初始化 (硬碟偵測)</td><td class="text-sm">顯示 <b>A0</b> 通常代表正常進入系統。若卡在 <b>A2</b>，則需檢查 SATA 排線、M.2 硬碟接觸、SATA Controller 或背板是否異常。</td></tr>
+                        <tr><td class="font-mono font-black text-sky-600 text-lg">b4</td><td class="font-bold">USB 設備熱插拔</td><td class="text-sm">移除所有 USB 外部設備再開機測試，並用手電筒檢查主機板與機殼的 USB 接口是否出現金屬接腳變形短路。</td></tr>
+                        <tr><td class="font-mono font-black text-cyan-600 text-lg">d6</td><td class="font-bold">未偵測到 VGA 輸出設備</td><td class="text-sm">無顯示畫面，系統找不到顯示晶片。檢查獨立顯示卡安裝、螢幕訊號線，或先拔除獨顯切換至內顯進行交叉測試。</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-xs text-sky-600 mt-4 text-right font-bold">* 此表為常見代碼參考，實際定義可能因不同主機板廠牌與 BIOS 版本而略有差異。</p>
+        </section>
+
+    </main>
+
+    <!-- Modal: 新增與編輯 (由 JS 切換狀態，減少 DOM 冗餘) -->
+    <div id="recordModal" class="fixed inset-0 bg-slate-900/60 z-[120] hidden items-center justify-center p-4 backdrop-blur-sm no-print">
+        <div class="modal-3d w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all">
+            <div id="modalHeader" class="px-6 py-5 flex justify-between items-center modal-header-3d">
+                <h3 id="modalTitle" class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 drop-shadow-sm"></h3>
+                <button onclick="closeRecordModal()" class="text-sky-600 hover:text-rose-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <div class="p-8 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 bg-[var(--base-color)]">
+                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">收件日期</label><input type="date" id="form_receiveDate" class="w-full input-3d p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">送回日期</label><input type="date" id="form_returnDate" class="w-full input-3d p-3 text-sm font-medium"></div>
+                <div>
+                    <label class="block text-sm font-bold text-sky-900 mb-2 ml-1">類型</label>
+                    <select id="form_type" class="w-full input-3d p-3 text-sm font-medium">
+                        <option value="RMA">RMA</option><option value="QDE">QDE</option><option value="IN">IN</option>
+                        <option value="QE">QE</option><option value="JP">JP</option><option value="US">US</option>
+                    </select>
+                </div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">送修單號</label><input type="text" id="form_rmaNumber" placeholder="例如：RMA260100025" class="w-full input-3d p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-rose-600 mb-2 ml-1">型號 <span class="text-rose-500">*必填</span></label><input type="text" id="form_model" placeholder="例如：70-1Q0AV0100" class="w-full input-3d p-3 text-sm font-black text-rose-700"></div>
+                <div>
+                    <label class="block text-sm font-bold text-rose-600 mb-2 ml-1">分類 <span class="text-rose-500">*必填</span></label>
+                    <select id="form_category" class="w-full input-3d p-3 text-sm font-black text-rose-700">
+                        <option value="MB">MB (主機板)</option><option value="BP">BP (背板)</option><option value="Switch">Switch (交換器)</option>
+                        <option value="Router">Router (路由器)</option><option value="RAM">RAM (記憶體)</option><option value="HDD">HDD (硬碟)</option><option value="LAN card">LAN card (網卡)</option>
+                    </select>
+                </div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">序號</label><input type="text" id="form_serial" class="w-full input-3d p-3 text-sm font-mono font-bold text-ocean-primary"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">DOA/RMA原因</label><input type="text" id="form_reason" class="w-full input-3d p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">原因代碼描述</label><input type="text" id="form_reasonDesc" class="w-full input-3d p-3 text-sm font-medium"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">分析結果</label><input type="text" id="form_analysis" class="w-full input-3d p-3 text-sm font-medium"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">維修代碼描述</label><input type="text" id="form_repairDesc" class="w-full input-3d p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">零件位置</label><input type="text" id="form_location" class="w-full input-3d p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">零件料號</label><input type="text" id="form_partNum" class="w-full input-3d p-3 text-sm font-mono font-bold text-ocean-primary"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">維修註記</label><input type="text" id="form_repairNote" class="w-full input-3d p-3 text-sm font-medium"></div>
+            </div>
+            <div id="modalFooter" class="px-6 py-5 border-t border-white/50 flex justify-end gap-4 modal-header-3d rounded-t-none rounded-b-2xl">
+                <button onclick="closeRecordModal()" class="btn-3d-white px-5 py-2.5 rounded-xl text-sm">取消</button>
+                <button id="modalSubmitBtn" onclick="submitRecordForm()" class="btn-3d-primary px-5 py-2.5 rounded-xl text-sm flex items-center gap-2">儲存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: 行事曆管理紀錄 -->
+    <div id="manageCustomModal" class="fixed inset-0 bg-slate-900/60 z-[105] hidden items-center justify-center p-4 backdrop-blur-sm no-print">
+        <div class="modal-3d w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all">
+            <div class="px-6 py-5 flex justify-between items-center modal-header-3d">
+                <h3 class="text-xl font-extrabold text-teal-600 flex items-center gap-3 drop-shadow-sm">
+                    <div class="badge-3d !bg-teal-500 !border-teal-400 w-8 h-8"><i data-lucide="calendar-days" class="w-4 h-4"></i></div> 
+                    維修紀錄管理 <span class="text-sm font-bold text-slate-500 bg-white/50 px-2 py-1 rounded-lg border border-white">(含匯入與新增)</span>
+                </h3>
+                <button onclick="closeManageCustomModal()" class="text-sky-600 hover:text-rose-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+            </div>
+            <div class="flex flex-col md:flex-row flex-1 overflow-hidden bg-[var(--base-color)] p-4 gap-4">
+                <div class="w-full md:w-5/12 lg:w-1/3 chart-3d-container p-6 flex flex-col h-auto md:h-full">
+                    <div class="flex justify-between items-center mb-6">
+                        <button onclick="changeCalendarMonth(-1)" class="btn-3d-white p-2 rounded-xl transition"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                        <h4 id="calendarHeader" class="font-extrabold text-xl text-ocean-primary drop-shadow-sm"></h4>
+                        <button onclick="changeCalendarMonth(1)" class="btn-3d-white p-2 rounded-xl transition"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                    </div>
+                    <div class="grid grid-cols-7 gap-2 text-center text-sm font-black text-sky-700 mb-3 pb-2 border-b-2 border-white/50">
+                        <div class="text-rose-500 drop-shadow-sm">日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div class="text-teal-600 drop-shadow-sm">六</div>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-2 flex-1 content-start relative"></div>
+                </div>
+                <div class="w-full md:w-7/12 lg:w-2/3 chart-3d-container p-6 overflow-y-auto h-[40vh] md:h-auto flex flex-col">
+                    <div class="flex justify-between items-end mb-6 pb-4 border-b-2 border-white/50">
+                        <h4 id="selectedDateTitle" class="font-extrabold text-xl text-ocean-primary flex items-center gap-3 drop-shadow-sm">
+                            <i data-lucide="list" class="w-6 h-6 text-sky-500"></i> 請從左側選擇日期
+                        </h4>
+                    </div>
+                    <div id="customRecordsContainer" class="flex-1 pr-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: 確認清除匯入資料 -->
+    <div id="confirmClearImportModal" class="fixed inset-0 bg-slate-900/60 z-[110] hidden items-center justify-center p-4 backdrop-blur-sm no-print">
+        <div class="modal-3d w-full max-w-sm overflow-hidden transform transition-all">
+            <div class="p-8 text-center bg-[var(--base-color)]">
+                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 chart-3d-container">
+                    <i data-lucide="alert-triangle" class="w-10 h-10 text-rose-500 drop-shadow-md"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-sky-900 mb-3 drop-shadow-sm">確定要清除匯入資料？</h3>
+                <p class="text-sm text-sky-700 font-bold mb-8 input-3d p-4">此動作將會清除所有「Excel 匯入」的資料，<br>僅保留您手動新增的紀錄。</p>
+                <div class="flex justify-center gap-4">
+                    <button onclick="closeConfirmImportModal()" class="btn-3d-white px-5 py-3 rounded-xl text-sm w-full">取消</button>
+                    <button onclick="executeClearImportData()" class="btn-3d-danger px-5 py-3 rounded-xl text-sm w-full">確認清除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: 確認清除所有資料 -->
+    <div id="confirmClearCustomModal" class="fixed inset-0 bg-slate-900/60 z-[110] hidden items-center justify-center p-4 backdrop-blur-sm no-print">
+        <div class="modal-3d w-full max-w-sm overflow-hidden transform transition-all">
+            <div class="p-8 text-center bg-[var(--base-color)]">
+                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 chart-3d-container">
+                    <i data-lucide="alert-triangle" class="w-10 h-10 text-rose-500 drop-shadow-md"></i>
+                </div>
+                <h3 class="text-2xl font-extrabold text-sky-900 mb-3 drop-shadow-sm">確定要重置所有紀錄？</h3>
+                <p class="text-sm text-sky-700 font-bold mb-8 input-3d p-4">此動作將會清除所有「手動新增」與「Excel 匯入」的維修紀錄，且無法復原。</p>
+                <div class="flex justify-center gap-4">
+                    <button onclick="closeConfirmClearCustomModal()" class="btn-3d-white px-5 py-3 rounded-xl text-sm w-full">取消</button>
+                    <button onclick="executeClearCustomData()" class="btn-3d-danger px-5 py-3 rounded-xl text-sm w-full">確認清除</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 手機版強制橫向按鈕 -->
+    <button onclick="toggleLandscapeMode()" id="landscapeToggleBtn" class="md:hidden fixed bottom-6 left-6 z-[200] btn-3d-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[4px_4px_15px_rgba(0,0,0,0.3)] no-print transition-all duration-500">
+        <i data-lucide="smartphone" id="landscapeIcon" class="w-6 h-6 text-white transition-transform duration-500"></i>
+    </button>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-4 pointer-events-none no-print"></div>
+
+    <script>
+        lucide.createIcons();
+
+        Chart.defaults.font.size = 14;
+        Chart.defaults.color = '#4b5563';
+
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-TW', { hour12: false });
+            const clockEl = document.getElementById('clockDisplay');
+            if(clockEl) clockEl.textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        let allSavedData = []; 
+        let globalData = [];   
+        let allModels = [];
+        let currentModel = "";
+        
+        let currentCalYear = new Date().getFullYear();
+        let currentCalMonth = new Date().getMonth();
+        let selectedCalDate = null; 
+        
+        let editingRecordId = null;
+        let isEditMode = false;
+
+        let currentCat3 = "MB";
+        let currentCat4 = "MB";
+
+        let pieChartModelsInstance = null;
+        let pieChartAllReasonsInstance = null;
+        let pieChartRepairDescInstance = null; 
+        let pieChartCategoryInstance = null;
+        let barChartInstance = null;
+
+        let autoScrollTimer = null;
+        let isScrollingPaused = false;
+
+        const keys = {
+            receiveDate: "收件日期", returnDate: "送回日期", type: "類型",
+            rmaNumber: "送修單號", model: "型號", category: "分類", serial: "序號",
+            reason: "DOA/RMA原因", reasonDesc: "原因代碼描述", analysis: "分析結果",
+            repairDesc: "維修代碼描述", location: "零件位置", partNum: "零件料號", repairNote: "維修註記"
+        };
+
+        const pieColors = [
+            "#6366f1", "#22d3ee", "#f59e0b", "#ef4444", "#10b981", 
+            "#8b5cf6", "#ec4899", "#14b8a6", "#f97316", "#06b6d4", 
+            "#a855f7", "#84cc16", "#f43f5e", "#d946ef", "#0ea5e9", 
+            "#fbbf24", "#34d399", "#a3e635", "#fb923c", "#94a3b8"
+        ];
+
+        const customPieOptions = (isDoughnut = false) => ({
+            responsive: true, maintainAspectRatio: false,
+            layout: { padding: 10 },
+            plugins: {
+                legend: { position: 'right', labels: { boxWidth: 12, padding: 8, font: { size: 12 } }, onHover: pieLegendHoverCallback, onLeave: pieLegendLeaveCallback },
+                tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed} 台` } },
+                datalabels: {
+                    color: '#ffffff', font: { weight: 'bold', size: 14 }, textStrokeColor: 'rgba(0, 0, 0, 0.4)',
+                    textStrokeWidth: 3, anchor: 'center', align: 'center',
+                    display: (context) => context.dataset.data[context.dataIndex] > 0,
+                    formatter: (value) => value
+                }
+            },
+            ...(isDoughnut && { cutout: '55%' })
+        });
+
+        // --- 手機強制橫向顯示功能 ---
+        let isLandscape = false;
+        window.toggleLandscapeMode = function() {
+            isLandscape = !isLandscape;
+            const body = document.body;
+            const html = document.documentElement;
+            const icon = document.getElementById('landscapeIcon');
+            
+            if (isLandscape) {
+                html.classList.add('force-landscape-mode-html');
+                body.classList.add('force-landscape-mode');
+                icon.style.transform = 'rotate(90deg)';
+                showToast('已強制轉為橫向，請將手機逆時針轉向', 'success');
+            } else {
+                html.classList.remove('force-landscape-mode-html');
+                body.classList.remove('force-landscape-mode');
+                icon.style.transform = 'rotate(0deg)';
+                showToast('已恢復直向顯示模式', 'success');
+            }
+            
+            // 重新觸發 resize，讓圖表和背景重新抓取維度
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+                if (pieChartModelsInstance) pieChartModelsInstance.resize();
+                if (pieChartAllReasonsInstance) pieChartAllReasonsInstance.resize();
+                if (pieChartRepairDescInstance) pieChartRepairDescInstance.resize();
+                if (pieChartCategoryInstance) pieChartCategoryInstance.resize();
+                if (barChartInstance) barChartInstance.resize();
+            }, 100);
+        };
+
+        function getBoardCategory(row) {
+            if (row[keys.category]) return String(row[keys.category]).trim();
+            return '未分類';
+        }
+
+        document.querySelectorAll('.tab-btn-sec3').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-btn-sec3').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                currentCat3 = e.currentTarget.dataset.cat;
+                updateSection3();
+            });
+        });
+
+        document.querySelectorAll('.tab-btn-sec4').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                document.querySelectorAll('.tab-btn-sec4').forEach(b => b.classList.remove('active'));
+                e.currentTarget.classList.add('active');
+                currentCat4 = e.currentTarget.dataset.cat;
+                updateSection4();
+            });
+        });
+
+        function formatExcelDate(excelDate) {
+            if (!excelDate) return '';
+            if (typeof excelDate === 'number') {
+                const date = new Date(Math.round((excelDate - 25569) * 86400 * 1000));
+                return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+            }
+            if (typeof excelDate === 'string') {
+                const d = new Date(excelDate.replace(/\//g, '-'));
+                if (!isNaN(d.getTime())) return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+            return String(excelDate);
+        }
+
+        document.getElementById('excelUpload').addEventListener('change', handleFileUpload);
+        document.getElementById('searchInput').addEventListener('input', updateSection4);
+
+        // 初始化科技網格連線背景
+        function initTechNetworkBg() {
+            const canvas = document.getElementById('techNetworkCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width, height;
+            let particles = [];
+            const connectionDistance = 140; // 節點連線的感應距離
+
+            function resize() {
+                // 如果是強制橫向模式，畫布寬高需互換以符合實際畫面
+                if (document.body.classList.contains('force-landscape-mode')) {
+                    width = canvas.width = window.innerHeight;
+                    height = canvas.height = window.innerWidth;
+                } else {
+                    width = canvas.width = window.innerWidth;
+                    height = canvas.height = window.innerHeight;
+                }
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            class Particle {
+                constructor() {
+                    this.x = Math.random() * width;
+                    this.y = Math.random() * height;
+                    this.vx = (Math.random() - 0.5) * 0.8; // 緩慢移動
+                    this.vy = (Math.random() - 0.5) * 0.8;
+                    this.radius = Math.random() * 2.5 + 1; // 節點大小
+                }
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    // 碰到邊界反彈，設定位置避免縮放時卡在邊界外
+                    if (this.x <= 0) { this.x = 0; this.vx *= -1; }
+                    else if (this.x >= width) { this.x = width; this.vx *= -1; }
+                    if (this.y <= 0) { this.y = 0; this.vy *= -1; }
+                    else if (this.y >= height) { this.y = height; this.vy *= -1; }
+                }
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                    ctx.fillStyle = '#6b7280'; // 對應 tailwind gray-500
+                    ctx.fill();
+                }
+            }
+
+            // 產生節點，數量根據螢幕寬度自動調整避免太密
+            const numParticles = Math.min(Math.floor(Math.max(window.innerWidth, window.innerHeight) / 15), 100);
+            for (let i = 0; i < numParticles; i++) {
+                particles.push(new Particle());
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                for (let i = 0; i < particles.length; i++) {
+                    particles[i].update();
+                    particles[i].draw();
+                    
+                    // 檢查連線
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (dist < connectionDistance) {
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x, particles[i].y);
+                            ctx.lineTo(particles[j].x, particles[j].y);
+                            // 距離越近線條越粗、透明度越高
+                            const alpha = 1 - (dist / connectionDistance);
+                            ctx.strokeStyle = `rgba(107, 114, 128, ${alpha * 0.5})`; // 使用 gray-500 色系
+                            ctx.lineWidth = alpha * 1.5;
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        window.onload = () => {
+            const savedData = localStorage.getItem('qnap_repair_data');
+            allSavedData = savedData ? JSON.parse(savedData) : [];
+            refreshDisplayData(); 
+            setupTableScrollEvents();
+            
+            initTechNetworkBg(); // 啟動科技網格背景
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('form_receiveDate').value = today;
+            document.getElementById('form_returnDate').value = today;
+        };
+
+        function generatePrintRowHTML(row) {
+            const rowCat = getBoardCategory(row);
+            let catColorClass = "text-slate-600";
+            if (rowCat && rowCat.includes('MB')) catColorClass = "text-blue-700";
+            else if (rowCat && rowCat.includes('BP')) catColorClass = "text-cyan-700";
+            else catColorClass = "text-sky-700"; 
+
+            return `
+                <tr>
+                    <td>${row[keys.receiveDate] || ''}</td>
+                    <td>${row[keys.returnDate] || ''}</td>
+                    <td>${row[keys.type] || ''}</td>
+                    <td class="font-mono">${row[keys.rmaNumber] || ''}</td>
+                    <td class="font-bold">${row[keys.model] || ''}</td>
+                    <td><span class="font-bold ${catColorClass}">${rowCat}</span></td>
+                    <td><span class="font-mono font-bold text-blue-600">${row[keys.serial] || ''}</span></td>
+                    <td><span class="font-medium text-teal-600">${row[keys.reason] || ''}</span></td>
+                    <td><span class="font-bold text-rose-600">${row[keys.reasonDesc] || ''}</span></td>
+                    <td>${row[keys.analysis] || ''}</td>
+                    <td><span class="font-bold text-amber-600">${row[keys.repairDesc] || ''}</span></td>
+                    <td>${row[keys.location] || ''}</td>
+                    <td class="font-mono text-sky-600">${row[keys.partNum] || ''}</td>
+                    <td class="break-words max-w-xs">${row[keys.repairNote] || ''}</td>
+                </tr>
+            `;
+        }
+
+        function exportToPDF() {
+            showToast('準備匯出 PDF，請稍候...', 'success');
+            if (autoScrollTimer) clearInterval(autoScrollTimer);
+
+            let printData = currentModel ? globalData.filter(row => row[keys.model] === currentModel) : [...globalData];
+            printData.sort((a, b) => new Date(a[keys.receiveDate] || 0) - new Date(b[keys.receiveDate] || 0));
+            
+            let rowsHtml = printData.length === 0 
+                ? `<tr><td colspan="14" class="px-6 py-10 text-center text-sky-400 bg-white">沒有可匯出的資料</td></tr>` 
+                : printData.map(generatePrintRowHTML).join('');
+
+            const opt = {
+                margin:       [15, 15, 15, 15], 
+                filename:     `QNAP_板卡維修紀錄_${currentModel || '全部'}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { 
+                    scale: 2, useCORS: true, windowWidth: 1200, width: 1200, x: 0, y: 0, scrollX: 0, scrollY: 0,
+                    onclone: (clonedDoc) => {
+                        clonedDoc.body.classList.add('pdf-mode');
+                        const cloneTbody = clonedDoc.getElementById('recordsTableBody');
+                        if (cloneTbody) cloneTbody.innerHTML = rowsHtml;
+                        const printTitleModelEl = clonedDoc.getElementById('printTitleModel');
+                        if (printTitleModelEl) printTitleModelEl.textContent = currentModel ? `(機種: ${currentModel})` : '(所有機種)';
+                        const scrollContainer = clonedDoc.getElementById('tableScrollContainer');
+                        if(scrollContainer) { scrollContainer.style.maxHeight = 'none'; scrollContainer.style.overflow = 'visible'; }
+                    }
+                },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak:    { mode: 'css', avoid: ['tr'] }
+            };
+
+            setTimeout(() => {
+                html2pdf().set(opt).from(document.body).save().then(() => showToast('PDF 匯出完成！', 'success'))
+                .catch(err => { console.error(err); showToast('匯出失敗，請重試！', 'error'); });
+            }, 100);
+        }
+
+        window.addEventListener('beforeprint', () => {
+            if (autoScrollTimer) clearInterval(autoScrollTimer);
+            const tbody = document.getElementById('recordsTableBody');
+            const container = document.getElementById('tableScrollContainer');
+            
+            let printData = currentModel ? globalData.filter(row => row[keys.model] === currentModel) : [...globalData];
+            printData.sort((a, b) => new Date(a[keys.receiveDate] || 0) - new Date(b[keys.receiveDate] || 0));
+            
+            const printTitleModelEl = document.getElementById('printTitleModel');
+            if (printTitleModelEl) printTitleModelEl.textContent = currentModel ? `(機種: ${currentModel})` : '(所有機種)';
+            
+            tbody.innerHTML = printData.length === 0 
+                ? `<tr><td colspan="14" class="px-6 py-10 text-center text-sky-400 bg-white">沒有可列印的資料</td></tr>` 
+                : printData.map(generatePrintRowHTML).join('');
+
+            if (container) container.scrollTop = 0;
+        });
+
+        window.addEventListener('afterprint', () => updateSection4());
+
+        function setupTableScrollEvents() {
+            const container = document.getElementById('tableScrollContainer');
+            if (!container) return;
+            container.addEventListener('mouseenter', () => isScrollingPaused = true);
+            container.addEventListener('mouseleave', () => isScrollingPaused = false);
+            container.addEventListener('touchstart', () => isScrollingPaused = true);
+            container.addEventListener('touchend', () => isScrollingPaused = false);
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const btnClass = type === 'success' ? 'btn-3d-secondary' : 'btn-3d-danger';
+            const iconName = type === 'success' ? 'check-circle' : 'alert-circle';
+            
+            toast.className = `px-6 py-4 rounded-2xl text-white font-extrabold flex items-center gap-4 transform transition-all duration-300 toast-hide ${btnClass}`;
+            toast.innerHTML = `<i data-lucide="${iconName}" class="w-6 h-6 drop-shadow-md"></i> <span class="drop-shadow-md">${message}</span>`;
+            
+            container.appendChild(toast);
+            lucide.createIcons({ root: toast });
+            
+            requestAnimationFrame(() => toast.classList.remove('toast-hide'));
+            setTimeout(() => { toast.classList.add('toast-hide'); setTimeout(() => toast.remove(), 300); }, 3500);
+        }
+
+        // --- Top 3 Tips Toggle Functions ---
+        window.toggleTop3Tips = function() {
+            const popup = document.getElementById('top3TipsPopup');
+            if (popup) popup.classList.toggle('hidden');
+        };
+
+        // 點擊彈出框外部時自動關閉
+        document.addEventListener('click', (e) => {
+            const btn = document.getElementById('top3TipBtn');
+            const popup = document.getElementById('top3TipsPopup');
+            if (btn && popup && !btn.contains(e.target) && !popup.contains(e.target)) {
+                popup.classList.add('hidden');
+            }
+        });
+
+        // --- Model Menu Functions ---
+        window.openModelMenu = function() {
+            const menu = document.getElementById('modelDropdownMenu');
+            const icon = document.getElementById('modelSelectIcon');
+            if (menu && menu.classList.contains('hidden')) {
+                menu.classList.remove('hidden');
+                void menu.offsetWidth;
+                menu.classList.remove('opacity-0');
+                if(icon) icon.style.transform = 'rotate(180deg)';
+            }
+        };
+
+        window.toggleModelMenu = function(e) {
+            if(e) e.stopPropagation();
+            document.getElementById('modelDropdownMenu').classList.contains('hidden') ? openModelMenu() : closeModelMenu();
+        };
+
+        window.closeModelMenu = function() {
+            const menu = document.getElementById('modelDropdownMenu');
+            const icon = document.getElementById('modelSelectIcon');
+            if (menu && !menu.classList.contains('hidden')) {
+                menu.classList.add('opacity-0');
+                setTimeout(() => menu.classList.add('hidden'), 200);
+                if(icon) icon.style.transform = 'rotate(0deg)';
+            }
+        };
+
+        window.searchSeries = function() {
+            const searchText = document.getElementById('seriesSearchInput').value.trim().toUpperCase();
+            if (!searchText) return;
+            openModelMenu();
+
+            for (let group of document.querySelectorAll('#modelMenuContent > div[data-series-title]')) {
+                if (group.getAttribute('data-series-title').includes(searchText)) {
+                    document.getElementById('modelDropdownMenu').scrollTo({ top: group.offsetTop - 20, behavior: 'smooth' });
+                    group.classList.add('ring-2', 'ring-ocean-accent', 'shadow-[0_0_15px_rgba(107,114,128,0.4)]');
+                    setTimeout(() => group.classList.remove('ring-2', 'ring-ocean-accent', 'shadow-[0_0_15px_rgba(107,114,128,0.4)]'), 1500);
+                    break;
+                }
+            }
+        };
+
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('modelSelectContainer');
+            if (container && !container.contains(e.target)) closeModelMenu();
+        });
+
+        function selectModel(model) {
+            currentModel = model;
+            document.getElementById('selectedModelText').textContent = model;
+            closeModelMenu();
+            autoSelectCategoryForModel(currentModel);
+            updateAllSections();
+            populateModelSelect(); 
+        }
+
+        function populateModelSelect() {
+            const menuContent = document.getElementById('modelMenuContent');
+            const selectedText = document.getElementById('selectedModelText');
+            menuContent.innerHTML = '';
+            
+            if (allModels.length === 0) {
+                selectedText.textContent = '無資料...';
+                menuContent.innerHTML = '<div class="p-3 text-slate-500 font-bold text-center">無資料...</div>';
+                return;
+            }
+
+            const groupedModels = {};
+            allModels.forEach(model => {
+                const series = getModelSeries(model);
+                if (!groupedModels[series]) groupedModels[series] = [];
+                groupedModels[series].push(model);
+            });
+
+            Object.keys(groupedModels).sort().forEach(series => {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'flex flex-col gap-3 p-4 chart-3d-container transition-all duration-500';
+                groupDiv.setAttribute('data-series-title', series.toUpperCase());
+                
+                groupDiv.innerHTML = `<h4 class="text-rose-500 font-extrabold text-base drop-shadow-sm border-b-2 border-white/60 pb-2 mb-2 flex items-center gap-2 tracking-wider"><div class="badge-3d !bg-rose-500 !border-rose-400 w-6 h-6 shadow-sm"><i data-lucide="tag" class="w-3 h-3 text-white"></i></div> 【 ${series} 系列 】</h4>`;
+
+                const modelsArray = groupedModels[series].sort();
+                const optionsContainer = document.createElement('div');
+                optionsContainer.className = modelsArray.length > 20 ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3' : 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3';
+
+                modelsArray.forEach(model => {
+                    const btn = document.createElement('button');
+                    btn.className = (model === currentModel) 
+                        ? 'px-4 py-3 rounded-xl text-sm font-black outline-none transition-all duration-200 bg-gradient-to-br from-ocean-accent to-ocean-primary text-white shadow-[inset_3px_3px_6px_#374151,inset_-3px_-3px_6px_#6b7280] border-none truncate text-left'
+                        : 'btn-3d-white px-4 py-3 rounded-xl text-sm font-bold text-sky-800 outline-none truncate text-left';
+                    btn.textContent = btn.title = model;
+                    btn.onclick = (e) => { e.preventDefault(); e.stopPropagation(); selectModel(model); };
+                    optionsContainer.appendChild(btn);
+                });
+                groupDiv.appendChild(optionsContainer);
+                menuContent.appendChild(groupDiv);
+            });
+            selectedText.textContent = currentModel || '請選擇機種...';
+            lucide.createIcons({ root: menuContent });
+        }
+
+        // --- Modals Form Data Handling ---
+        function getFormData() {
+            const inputModel = document.getElementById('form_model').value.trim();
+            if (!inputModel) {
+                showToast('「型號」為必填欄位，請確認！', 'error');
+                document.getElementById('form_model').focus();
+                return null;
+            }
+            return {
+                [keys.receiveDate]: document.getElementById('form_receiveDate').value,
+                [keys.returnDate]: document.getElementById('form_returnDate').value,
+                [keys.type]: document.getElementById('form_type').value,
+                [keys.rmaNumber]: document.getElementById('form_rmaNumber').value.trim(),
+                [keys.model]: inputModel,
+                [keys.category]: document.getElementById('form_category').value,
+                [keys.serial]: document.getElementById('form_serial').value.trim(),
+                [keys.reason]: document.getElementById('form_reason').value.trim(),
+                [keys.reasonDesc]: document.getElementById('form_reasonDesc').value.trim(),
+                [keys.analysis]: document.getElementById('form_analysis').value.trim(),
+                [keys.repairDesc]: document.getElementById('form_repairDesc').value.trim(),
+                [keys.location]: document.getElementById('form_location').value.trim(),
+                [keys.partNum]: document.getElementById('form_partNum').value.trim(),
+                [keys.repairNote]: document.getElementById('form_repairNote').value.trim(),
+            };
+        }
+
+        function clearForm() {
+            ['rmaNumber', 'model', 'serial', 'reason', 'reasonDesc', 'analysis', 'repairDesc', 'location', 'partNum', 'repairNote'].forEach(id => {
+                document.getElementById(`form_${id}`).value = '';
+            });
+            document.getElementById('form_category').value = 'MB';
+        }
+
+        function fillForm(record) {
+            document.getElementById('form_receiveDate').value = record[keys.receiveDate] || '';
+            document.getElementById('form_returnDate').value = record[keys.returnDate] || '';
+            document.getElementById('form_type').value = record[keys.type] || 'RMA';
+            document.getElementById('form_rmaNumber').value = record[keys.rmaNumber] || '';
+            document.getElementById('form_model').value = record[keys.model] || '';
+            document.getElementById('form_category').value = record[keys.category] || 'MB';
+            document.getElementById('form_serial').value = record[keys.serial] || '';
+            document.getElementById('form_reason').value = record[keys.reason] || '';
+            document.getElementById('form_reasonDesc').value = record[keys.reasonDesc] || '';
+            document.getElementById('form_analysis').value = record[keys.analysis] || '';
+            document.getElementById('form_repairDesc').value = record[keys.repairDesc] || '';
+            document.getElementById('form_location').value = record[keys.location] || '';
+            document.getElementById('form_partNum').value = record[keys.partNum] || '';
+            document.getElementById('form_repairNote').value = record[keys.repairNote] || '';
+        }
+
+        function openAddModal() {
+            isEditMode = false;
+            editingRecordId = null;
+            clearForm();
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('form_receiveDate').value = today;
+            document.getElementById('form_returnDate').value = today;
+
+            document.getElementById('modalTitle').innerHTML = '<div class="badge-3d w-8 h-8"><i data-lucide="plus-circle" class="w-4 h-4"></i></div> 新增維修紀錄';
+            const header = document.getElementById('modalHeader');
+            header.className = 'px-6 py-5 flex justify-between items-center modal-header-3d';
+            
+            const footer = document.getElementById('modalFooter');
+            footer.className = 'px-6 py-5 border-t border-white/50 flex justify-end gap-4 modal-header-3d rounded-t-none rounded-b-2xl';
+
+            const submitBtn = document.getElementById('modalSubmitBtn');
+            submitBtn.className = 'btn-3d-primary px-5 py-2.5 rounded-xl text-sm flex items-center gap-2';
+            submitBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> 儲存紀錄';
+            
+            lucide.createIcons({ root: document.getElementById('recordModal') });
+            document.getElementById('recordModal').classList.replace('hidden', 'flex');
+        }
+
+        function openEditModal(id) {
+            const record = allSavedData.find(r => r.id === id);
+            if (!record) return;
+
+            isEditMode = true;
+            editingRecordId = id;
+            fillForm(record);
+
+            document.getElementById('modalTitle').innerHTML = '<div class="badge-3d !bg-amber-500 !border-amber-400 w-8 h-8"><i data-lucide="edit-3" class="w-4 h-4 text-white"></i></div> <span class="text-amber-600">編輯維修紀錄</span>';
+            const header = document.getElementById('modalHeader');
+            header.className = 'px-6 py-5 flex justify-between items-center modal-header-3d bg-amber-500/10';
+            
+            const footer = document.getElementById('modalFooter');
+            footer.className = 'px-6 py-5 border-t border-white/50 flex justify-end gap-4 modal-header-3d bg-amber-500/10 rounded-t-none rounded-b-2xl';
+
+            const submitBtn = document.getElementById('modalSubmitBtn');
+            submitBtn.className = 'btn-3d-primary !bg-amber-500 !border-amber-400 !shadow-[5px_5px_10px_var(--shadow-dark),-5px_-5px_10px_var(--shadow-light)] active:!shadow-[inset_4px_4px_8px_#d97706,inset_-4px_-4px_8px_#fbbf24] px-5 py-2.5 rounded-xl text-sm flex items-center gap-2';
+            submitBtn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i> 確認修改';
+
+            lucide.createIcons({ root: document.getElementById('recordModal') });
+            document.getElementById('recordModal').classList.replace('hidden', 'flex');
+        }
+
+        function closeRecordModal() {
+            document.getElementById('recordModal').classList.replace('flex', 'hidden');
+        }
+
+        function submitRecordForm() {
+            const data = getFormData();
+            if (!data) return;
+
+            if (isEditMode && editingRecordId) {
+                const index = allSavedData.findIndex(r => r.id === editingRecordId);
+                if (index !== -1) {
+                    data.isCustom = allSavedData[index].isCustom;
+                    data.isImported = allSavedData[index].isImported;
+                    data.id = allSavedData[index].id;
+                    allSavedData[index] = data;
+                    showToast('紀錄編輯成功！', 'success');
+                }
+            } else {
+                data.isCustom = true;
+                data.id = Date.now();
+                allSavedData.push(data);
+                showToast('新維修紀錄已儲存成功！', 'success');
+            }
+
+            try { localStorage.setItem('qnap_repair_data', JSON.stringify(allSavedData)); } 
+            catch (e) { showToast('儲存失敗！空間可能已滿', 'error'); }
+
+            closeRecordModal();
+            currentModel = data[keys.model];
+            refreshDisplayData();
+            if(!document.getElementById('manageCustomModal').classList.contains('hidden')) {
+                renderCalendar();
+                renderSelectedDateRecords();
+            }
+        }
+
+        // --- 行事曆管理相關 ---
+        function openManageCustomModal() {
+            const today = new Date();
+            currentCalYear = today.getFullYear();
+            currentCalMonth = today.getMonth();
+            selectedCalDate = null;
+            
+            renderCalendar();
+            renderSelectedDateRecords();
+
+            const modal = document.getElementById('manageCustomModal');
+            modal.classList.replace('hidden', 'flex');
+            lucide.createIcons({ root: modal });
+        }
+
+        function closeManageCustomModal() {
+            document.getElementById('manageCustomModal').classList.replace('flex', 'hidden');
+        }
+
+        function changeCalendarMonth(offset) {
+            currentCalMonth += offset;
+            if (currentCalMonth > 11) { currentCalMonth = 0; currentCalYear++; } 
+            else if (currentCalMonth < 0) { currentCalMonth = 11; currentCalYear--; }
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const calGrid = document.getElementById('calendarGrid');
+            document.getElementById('calendarHeader').textContent = `${currentCalYear} 年 ${currentCalMonth + 1} 月`;
+
+            const firstDay = new Date(currentCalYear, currentCalMonth, 1).getDay();
+            const daysInMonth = new Date(currentCalYear, currentCalMonth + 1, 0).getDate();
+
+            const recordsByDate = {};
+            allSavedData.forEach(r => { if (r[keys.receiveDate]) recordsByDate[r[keys.receiveDate]] = (recordsByDate[r[keys.receiveDate]] || 0) + 1; });
+
+            let html = '';
+            for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+            
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateStr = `${currentCalYear}-${String(currentCalMonth + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const count = recordsByDate[dateStr] || 0;
+                const isSelected = dateStr === selectedCalDate;
+
+                let classes = `relative p-1.5 sm:p-2 min-h-[50px] sm:min-h-[60px] rounded-xl cursor-pointer transition flex flex-col items-center justify-start `;
+                classes += isSelected ? `btn-3d-primary text-white` : (count > 0 ? `btn-3d-white text-sky-800` : `input-3d text-slate-400 hover:text-ocean-primary hover:shadow-inner`);
+                let badge = count > 0 ? `<span class="absolute top-0 right-0 -mt-2 -mr-2 badge-3d !bg-rose-500 !border-rose-400 text-[10px] font-black px-1.5 py-0.5">${count}</span>` : '';
+
+                html += `<div class="${classes}" onclick="selectCalendarDate('${dateStr}')"><span class="text-sm font-black drop-shadow-sm mt-1">${i}</span>${badge}</div>`;
+            }
+            calGrid.innerHTML = html;
+        }
+
+        function selectCalendarDate(dateStr) {
+            selectedCalDate = dateStr;
+            renderCalendar(); 
+            renderSelectedDateRecords();
+        }
+
+        function renderSelectedDateRecords() {
+            const container = document.getElementById('customRecordsContainer');
+            const title = document.getElementById('selectedDateTitle');
+
+            if (!selectedCalDate) {
+                title.innerHTML = `<i data-lucide="calendar-search" class="w-6 h-6 text-sky-500"></i> 請從左側選擇日期`;
+                container.innerHTML = `<div class="text-center py-12 input-3d mx-8 mt-4 rounded-3xl"><i data-lucide="mouse-pointer-click" class="w-12 h-12 text-sky-300 mx-auto mb-3 drop-shadow-sm"></i><p class="text-sky-700 font-extrabold">點擊日曆上的日期以檢視詳細紀錄</p></div>`;
+                lucide.createIcons({ root: title }); lucide.createIcons({ root: container });
+                return;
+            }
+
+            title.innerHTML = `<i data-lucide="calendar-check" class="w-6 h-6 text-ocean-accent"></i> ${selectedCalDate} 的紀錄`;
+            lucide.createIcons({ root: title });
+
+            const dateRecords = allSavedData.filter(r => r[keys.receiveDate] === selectedCalDate).sort((a, b) => new Date(a[keys.receiveDate] || 0) - new Date(b[keys.receiveDate] || 0));
+
+            if (dateRecords.length === 0) {
+                container.innerHTML = `<div class="text-center py-12 input-3d mx-8 mt-4 rounded-3xl"><p class="text-sky-600 font-extrabold">此日期沒有任何維修紀錄</p></div>`;
+                return;
+            }
+
+            container.innerHTML = dateRecords.map(row => {
+                const sourceBadge = row.isImported ? `<span class="badge-3d !bg-indigo-500 !border-indigo-400 text-[11px] px-2 py-0.5">Excel匯入</span>` : `<span class="badge-3d !bg-teal-500 !border-teal-400 text-[11px] px-2 py-0.5">手動新增</span>`;
+                return `
+                <div class="list-item-3d flex-col xl:flex-row xl:items-center justify-between">
+                    <div class="flex-1 min-w-0 w-full">
+                        <div class="flex items-center gap-3 mb-2 flex-wrap">
+                            <span class="input-3d px-3 py-1 font-black text-xs text-ocean-primary shadow-sm">${row[keys.category]}</span>
+                            <span class="font-extrabold text-sky-900 text-lg truncate drop-shadow-sm">${row[keys.model]}</span>
+                            ${sourceBadge}
+                            <span class="text-xs font-mono text-sky-700 font-bold input-3d px-2 py-1 ml-auto xl:ml-2">序號: ${row[keys.serial] || '-'}</span>
+                        </div>
+                        <div class="text-sm text-slate-600 flex flex-wrap gap-x-5 gap-y-2 mt-3 font-medium">
+                            <span class="flex items-center gap-1"><i data-lucide="hash" class="w-4 h-4 text-sky-400"></i> <span class="font-mono">${row[keys.rmaNumber] || '-'}</span></span>
+                            <span class="flex items-center gap-1"><i data-lucide="alert-circle" class="w-4 h-4 text-sky-400"></i> <span class="font-bold text-sky-900">${row[keys.reason] || '-'}</span></span>
+                            <span class="flex items-center gap-1"><i data-lucide="search-code" class="w-4 h-4 text-sky-400"></i> ${row[keys.analysis] || '-'}</span>
+                            <span class="flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4 text-sky-400"></i> ${row[keys.repairNote] || '-'}</span>
+                        </div>
+                    </div>
+                    <div class="shrink-0 flex gap-3 w-full xl:w-auto mt-2 xl:mt-0 justify-end">
+                        <button onclick="openEditModal(${row.id})" class="btn-3d-white text-amber-600 px-4 py-2 rounded-xl text-sm flex items-center gap-1.5"><i data-lucide="edit-3" class="w-4 h-4"></i> 編輯</button>
+                        <button onclick="deleteCustomRecord(${row.id})" class="btn-3d-white text-rose-500 px-4 py-2 rounded-xl text-sm flex items-center gap-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i> 刪除</button>
+                    </div>
+                </div>
+            `}).join('');
+            lucide.createIcons({ root: container });
+        }
+
+        function deleteCustomRecord(id) {
+            if(!confirm('確定要刪除這筆紀錄嗎？刪除後無法復原。')) return;
+            allSavedData = allSavedData.filter(r => r.id !== id);
+            try { localStorage.setItem('qnap_repair_data', JSON.stringify(allSavedData)); showToast('紀錄已成功刪除！', 'success'); } 
+            catch (e) { showToast('刪除狀態儲存失敗！', 'error'); }
+            renderCalendar(); renderSelectedDateRecords(); refreshDisplayData(); 
+        }
+
+        function confirmClearImportData() { document.getElementById('confirmClearImportModal').classList.replace('hidden', 'flex'); }
+        function closeConfirmImportModal() { document.getElementById('confirmClearImportModal').classList.replace('flex', 'hidden'); }
+        function executeClearImportData() {
+            allSavedData = allSavedData.filter(row => row.isCustom === true);
+            localStorage.setItem('qnap_repair_data', JSON.stringify(allSavedData));
+            refreshDisplayData(); closeConfirmImportModal();
+            showToast('已成功清除 Excel 匯入資料，並恢復顯示手動新增紀錄！', 'success');
+        }
+
+        function confirmClearCustomData() { document.getElementById('confirmClearCustomModal').classList.replace('hidden', 'flex'); }
+        function closeConfirmClearCustomModal() { document.getElementById('confirmClearCustomModal').classList.replace('flex', 'hidden'); }
+        function executeClearCustomData() {
+            allSavedData = [];
+            try { localStorage.removeItem('qnap_repair_data'); showToast('已成功清除所有的紀錄！', 'success'); } 
+            catch (e) { showToast('清除狀態更新失敗！', 'error'); }
+            refreshDisplayData(); renderCalendar(); renderSelectedDateRecords(); closeConfirmClearCustomModal();
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {type: 'array'});
+                const rawJson = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                
+                const formattedData = rawJson.map((row, index) => {
+                    let modelVal = row['分析機種'] || row['機種'] || row['型號'] || row['Model'] || row['Model Name'] || 'Unknown';
+                    let rawCat = row['分類'] || row['產品類別'] || row['產品分類'] || row['Category'] || row['板階'] || '';
+                    return {
+                        [keys.receiveDate]: formatExcelDate(row['收件日期'] || row['Receive Date'] || row['日期'] || row['維修日期'] || ''),
+                        [keys.returnDate]: formatExcelDate(row['送回日期'] || row['Return Date'] || ''),
+                        [keys.type]: row['類型'] || row['Type'] || '',
+                        [keys.rmaNumber]: row['送修單號'] || row['RMA Number'] || '',
+                        [keys.model]: String(modelVal).trim(),
+                        [keys.category]: rawCat ? String(rawCat).trim() : '未分類',
+                        [keys.serial]: row['序號'] || row['SN'] || '',
+                        [keys.reason]: row['DOA/RMA原因'] || row['Reason'] || '',
+                        [keys.reasonDesc]: row['原因代碼描述'] || row['REASON_DESC'] || row['原因描述'] || row['Reason Description'] || '',
+                        [keys.analysis]: row['分析結果'] || row['Analysis'] || '',
+                        [keys.repairDesc]: row['維修代碼描述'] || row['REPAIR_DESC'] || '',
+                        [keys.location]: row['零件位置'] || row['Location'] || '',
+                        [keys.partNum]: row['零件料號'] || row['Part Number'] || '',
+                        [keys.repairNote]: row['維修註記'] || row['註記'] || row['備註'] || row['Remark'] || row['Note'] || '',
+                        isImported: true, id: Date.now() + index
+                    };
+                });
+
+                allSavedData = [...allSavedData, ...formattedData];
+                try { localStorage.setItem('qnap_repair_data', JSON.stringify(allSavedData)); showToast('Excel 匯入成功！', 'success'); } 
+                catch (err) { showToast('資料載入成功，但暫存空間不足', 'error'); }
+                refreshDisplayData(); document.getElementById('excelUpload').value = ''; 
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function refreshDisplayData() {
+            globalData = allSavedData;
+            document.getElementById('totalCount').textContent = globalData.length;
+
+            const modelSet = new Set();
+            globalData.forEach(row => { if(row[keys.model]) modelSet.add(row[keys.model]); });
+            allModels = Array.from(modelSet).sort();
+
+            if (allModels.length > 0) {
+                if (!currentModel || !allModels.includes(currentModel)) currentModel = allModels[0];
+                autoSelectCategoryForModel(currentModel);
+            } else {
+                currentModel = "";
+                document.getElementById('suggestionTitleModel').textContent = '未選取';
+                document.getElementById('barChartTitleModel').textContent = '未選取';
+            }
+            populateModelSelect();
+            updateAllSections();
+        }
+
+        function getModelSeries(modelName) {
+            const upperModel = String(modelName).toUpperCase();
+            const qMatch = upperModel.match(/Q[A-Z0-9]{3}/);
+            if (qMatch) return qMatch[0]; 
+            if (upperModel.includes('-')) return upperModel.split('-')[0];
+            const match = upperModel.match(/^[A-Z]+/);
+            return match ? match[0] : '其它';
+        }
+
+        function autoSelectCategoryForModel(modelName) {
+            if (!modelName) return;
+            const modelData = globalData.filter(row => row[keys.model] === modelName);
+            if (modelData.length === 0) return;
+
+            const validTabs = Array.from(document.querySelectorAll('.tab-btn-sec3')).map(btn => btn.dataset.cat);
+            const tabCounts = Object.fromEntries(validTabs.map(tab => [tab, 0]));
+
+            modelData.forEach(row => {
+                const rowCat = getBoardCategory(row).toLowerCase();
+                validTabs.forEach(tab => { if (rowCat.includes(tab.toLowerCase())) tabCounts[tab]++; });
+            });
+
+            let bestTab = validTabs[0], maxCount = -1;
+            validTabs.forEach(tab => { if (tabCounts[tab] > maxCount) { maxCount = tabCounts[tab]; bestTab = tab; } });
+
+            currentCat3 = currentCat4 = bestTab;
+            document.querySelectorAll('.tab-btn-sec3').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === currentCat3));
+            document.querySelectorAll('.tab-btn-sec4').forEach(btn => btn.classList.toggle('active', btn.dataset.cat === currentCat4));
+        }
+
+        function updateAllSections() { updateSection2(); updateSection3(); updateSection4(); }
+
+        function jumpToReason(reason) {
+            const targetEl = document.querySelector(`li[data-reason="${reason}"]`);
+            if (targetEl) {
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const color = targetEl.style.borderColor || 'var(--shadow-dark)';
+                targetEl.style.boxShadow = `0 0 20px ${color}, inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)`;
+                targetEl.style.transform = 'scale(1.02) translateX(10px)';
+                setTimeout(() => { targetEl.style.boxShadow = ''; targetEl.style.transform = ''; }, 1500);
+            }
+        }
+
+        const pieLegendHoverCallback = (event, legendItem, legend) => {
+            const chart = legend.chart;
+            if (chart.data.datasets.length > 0) {
+                const elements = [{ datasetIndex: 0, index: legendItem.index }];
+                chart.tooltip.setActiveElements(elements, { x: event.x, y: event.y });
+                chart.setActiveElements(elements);
+                chart.update();
+            }
+        };
+
+        const pieLegendLeaveCallback = (event, legendItem, legend) => {
+            const chart = legend.chart;
+            chart.tooltip.setActiveElements([], { x: 0, y: 0 });
+            chart.setActiveElements([]); 
+            chart.update();
+        };
+
+        function getTop10PieData(countObject) {
+            const sorted = Object.entries(countObject).sort((a, b) => b[1] - a[1]);
+            const top10 = sorted.slice(0, 10);
+            let labels = top10.map(i => i[0]);
+            let data = top10.map(i => i[1]);
+            if (sorted.length > 10) {
+                labels.push('其他');
+                data.push(sorted.slice(10).reduce((sum, i) => sum + i[1], 0));
+            }
+            const total = data.reduce((sum, val) => sum + val, 0);
+            labels = labels.map((label, i) => `${label} (${total ? (data[i] * 100 / total).toFixed(1) : 0}%)`);
+            return { labels, data };
+        }
+
+        function renderPieChart(instance, canvasId, type, labels, data, isDoughnut) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            if (instance) instance.destroy();
+            return new Chart(ctx, {
+                type: type,
+                data: { labels, datasets: [{ data, backgroundColor: pieColors, borderWidth: 1, borderColor: '#ffffff' }] },
+                options: customPieOptions(isDoughnut),
+                plugins: [ChartDataLabels]
+            });
+        }
+
+        function updateSection2() {
+            const counts = { models: {}, reasons: {}, category: {}, repairDesc: {} };
+            globalData.forEach(row => {
+                counts.models[row[keys.model] || 'Unknown'] = (counts.models[row[keys.model] || 'Unknown'] || 0) + 1;
+                counts.reasons[row[keys.reasonDesc] || '未記錄'] = (counts.reasons[row[keys.reasonDesc] || '未記錄'] || 0) + 1;
+                counts.category[row[keys.category] || '未分類'] = (counts.category[row[keys.category] || '未分類'] || 0) + 1;
+                counts.repairDesc[row[keys.repairDesc] || '未記錄'] = (counts.repairDesc[row[keys.repairDesc] || '未記錄'] || 0) + 1;
+            });
+
+            const pie1 = getTop10PieData(counts.models);
+            const pie2 = getTop10PieData(counts.reasons);
+            const pie3 = getTop10PieData(counts.repairDesc);
+            const pie4 = getTop10PieData(counts.category);
+
+            pieChartModelsInstance = renderPieChart(pieChartModelsInstance, 'pieChartModels', 'doughnut', pie1.labels, pie1.data, true);
+            pieChartAllReasonsInstance = renderPieChart(pieChartAllReasonsInstance, 'pieChartAllReasons', 'pie', pie2.labels, pie2.data, false);
+            pieChartRepairDescInstance = renderPieChart(pieChartRepairDescInstance, 'pieChartRepairDesc', 'pie', pie3.labels, pie3.data, false);
+            pieChartCategoryInstance = renderPieChart(pieChartCategoryInstance, 'pieChartCategory', 'pie', pie4.labels, pie4.data, false);
+        }
+
+        function updateSection3() {
+            document.getElementById('suggestionTitleModel').textContent = currentModel || '未選取';
+            document.getElementById('barChartTitleModel').textContent = currentModel || '未選取';
+            document.getElementById('barChartTitleCat').textContent = currentCat3;
+            document.getElementById('suggTitleCat').textContent = currentCat3;
+
+            const filteredData = globalData.filter(row => row[keys.model] === currentModel && getBoardCategory(row).toLowerCase().includes(currentCat3.toLowerCase()));
+            const reasonCounts = {};
+            filteredData.forEach(row => { const r = row[keys.reason] || '未記錄'; reasonCounts[r] = (reasonCounts[r] || 0) + 1; });
+
+            const sortedReasons = Object.entries(reasonCounts).sort((a, b) => b[1] - a[1]);
+            const reasonLabels = sortedReasons.map(item => item[0]);
+            const reasonData = sortedReasons.map(item => item[1]);
+
+            if (barChartInstance) barChartInstance.destroy();
+            barChartInstance = new Chart(document.getElementById('barChart').getContext('2d'), {
+                type: 'bar',
+                data: { labels: reasonLabels, datasets: [{ label: '維修數量', data: reasonData, backgroundColor: pieColors, borderRadius: 4, barPercentage: 0.8, categoryPercentage: 0.9 }] },
+                options: {
+                    responsive: true, maintainAspectRatio: false, layout: { padding: { bottom: 45 } },
+                    onClick: (event, elements, chart) => { if (elements.length > 0) jumpToReason(chart.data.labels[elements[0].index]); },
+                    onHover: (event, elements) => { event.native.target.style.cursor = elements.length > 0 ? 'pointer' : 'default'; },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: (ctx) => ` ${ctx.label}: ${ctx.parsed} 台`, footer: () => '💡 點擊長條跳轉至詳細建議' } },
+                        datalabels: { color: '#082f49', anchor: 'end', align: 'top', font: { weight: 'bold', size: 11 }, formatter: (value, ctx) => { let sum = ctx.dataset.data.reduce((a, b) => a + b, 0); return sum === 0 ? '' : (value * 100 / sum).toFixed(1) + "%"; } }
+                    },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 }, grace: '10%' }, x: { grid: { display: false }, ticks: { color: 'transparent', font: { size: 14 } } } }
+                },
+                plugins: [ChartDataLabels, {
+                    id: 'htmlButtons',
+                    afterUpdate: (chart) => {
+                        const container = document.getElementById('barChartButtonsContainer');
+                        if (!container) return; container.innerHTML = '';
+                        const xAxis = chart.scales.x;
+                        const maxBtnWidth = Math.max((chart.data.labels.length > 1 ? xAxis.getPixelForTick(1) - xAxis.getPixelForTick(0) : 100) - 8, 40);
+
+                        chart.data.labels.forEach((label, index) => {
+                            const btn = document.createElement('button');
+                            const color = Array.isArray(chart.data.datasets[0].backgroundColor) ? chart.data.datasets[0].backgroundColor[index % chart.data.datasets[0].backgroundColor.length] : chart.data.datasets[0].backgroundColor;
+                            btn.className = 'absolute pointer-events-auto transform -translate-x-1/2 px-2 md:px-3 py-1.5 btn-3d-white rounded-lg text-xs md:text-sm z-10 flex items-center justify-center';
+                            btn.style.cssText = `left: ${xAxis.getPixelForTick(index)}px; top: ${chart.chartArea.bottom + 12}px; max-width: ${maxBtnWidth}px; width: max-content; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 3px solid ${color};`;
+                            btn.title = `點擊跳轉: ${label}`; btn.textContent = label; btn.onclick = () => jumpToReason(label);
+                            container.appendChild(btn);
+                        });
+                    }
+                }] 
+            });
+
+            const container = document.getElementById('suggestionsContainer');
+            if (filteredData.length === 0) {
+                container.innerHTML = `<p class="text-center py-8 font-bold text-sky-600 input-3d mx-auto max-w-md">目前尚無資料</p>`;
+                const top3TipBtn = document.getElementById('top3TipBtn');
+                if (top3TipBtn) top3TipBtn.classList.add('hidden');
+                return;
+            }
+
+            const suggestionsMap = new Map();
+            filteredData.forEach(row => {
+                const reason = row[keys.reason] || '未記錄', detailKey = `${row[keys.analysis] || '無'}|${row[keys.location] || '無'}|${row[keys.partNum] || '無'}`;
+                if (!suggestionsMap.has(reason)) suggestionsMap.set(reason, { count: 0, details: new Map() });
+                const rData = suggestionsMap.get(reason); rData.count++;
+                if (!rData.details.has(detailKey)) rData.details.set(detailKey, { analysis: row[keys.analysis] || '無', location: row[keys.location] || '無', partNum: row[keys.partNum] || '無', count: 0 });
+                rData.details.get(detailKey).count++;
+            });
+
+            // 將資料轉陣列並排序
+            const sortedItems = Array.from(suggestionsMap.entries()).map(([reason, data]) => ({ reason, ...data })).sort((a, b) => b.count - a.count);
+            
+            // --- 處理 提示彈出框 ---
+            const top3TipBtn = document.getElementById('top3TipBtn');
+            const top3TipsContent = document.getElementById('top3TipsContent');
+
+            // 統計全部的檢修方向(analysis)與位置(location)
+            const globalAnalysisMap = new Map();
+            filteredData.forEach(row => {
+                let analysis = (row[keys.analysis] || '').trim();
+                let location = (row[keys.location] || '').trim();
+                if (!analysis) analysis = '未記錄';
+                
+                if (!globalAnalysisMap.has(analysis)) {
+                    globalAnalysisMap.set(analysis, { count: 0, locations: new Set() });
+                }
+                const mapData = globalAnalysisMap.get(analysis);
+                mapData.count++;
+                if (location && location !== '-' && location !== '無') {
+                    mapData.locations.add(location);
+                }
+            });
+            // 排序
+            const sortedGlobalAnalysis = Array.from(globalAnalysisMap.entries()).sort((a, b) => b[1].count - a[1].count);
+
+            // 定義全部分析結果的顏色對應表
+            const analysisColorMap = new Map();
+            sortedGlobalAnalysis.forEach((item, index) => {
+                analysisColorMap.set(item[0], pieColors[index % pieColors.length]);
+            });
+
+            if (sortedGlobalAnalysis.length > 0) {
+                if (top3TipBtn) top3TipBtn.classList.remove('hidden');
+                let top3Html = '';
+                
+                // 取出【全部】檢修方向
+                for (let i = 0; i < sortedGlobalAnalysis.length; i++) {
+                    const analysisText = sortedGlobalAnalysis[i][0];
+                    const count = sortedGlobalAnalysis[i][1].count;
+                    const locArray = Array.from(sortedGlobalAnalysis[i][1].locations);
+                    const locationsStr = locArray.length > 0 ? locArray.join(', ') : '未記錄';
+                    const color = analysisColorMap.get(analysisText);
+
+                    top3Html += `
+                    <div class="flex flex-col gap-1.5 p-3 rounded-xl shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.2)] text-white mb-1 cursor-pointer hover:scale-[1.02] active:scale-95 transition-transform" style="background-color: ${color};" onclick="highlightAnalysis('${analysisText}', '${color}')">
+                        <div class="text-xs font-bold flex items-center justify-between border-b border-white/30 pb-1.5">
+                            <span class="bg-white/20 px-2 py-0.5 rounded shadow-sm flex items-center gap-1"><i data-lucide="tag" class="w-3 h-3"></i> 項目 ${i+1}</span>
+                            <span class="bg-white/20 px-2 py-0.5 rounded-md text-[11px] shadow-sm flex items-center gap-1"><i data-lucide="wrench" class="w-3 h-3"></i> ${count}次</span>
+                        </div>
+                        <div class="text-sm font-black pl-1 py-1 mt-1 leading-snug drop-shadow-md">${analysisText}</div>
+                        <div class="text-[11px] font-bold pl-1 pb-0.5 opacity-90 flex items-start gap-1 drop-shadow-sm"><i data-lucide="map-pin" class="w-3 h-3 shrink-0 mt-0.5"></i> <span class="break-all">位置: ${locationsStr}</span></div>
+                    </div>`;
+                }
+                if (top3TipsContent) {
+                    top3TipsContent.innerHTML = top3Html;
+                    lucide.createIcons({ root: top3TipsContent });
+                }
+            } else {
+                if (top3TipBtn) top3TipBtn.classList.add('hidden');
+                const popup = document.getElementById('top3TipsPopup');
+                if (popup) popup.classList.add('hidden');
+            }
+
+            // --- 處理下方的維修問題點清單 ---
+            const ul = document.createElement('ul');
+            ul.className = 'space-y-4 pb-2 max-h-[420px] overflow-y-auto pr-3 print:max-h-none print:overflow-visible print:pr-0';
+            
+            // 加入 .slice(0, 3) 確保只會顯示前三名的維修問題點
+            sortedItems.slice(0, 3).forEach((item, index) => {
+                // 整個問題點外框的顏色維持圓餅圖預設顏色
+                const itemColor = pieColors[index % pieColors.length];
+                
+                const li = document.createElement('li');
+                li.setAttribute('data-reason', item.reason); 
+                li.className = 'list-item-3d scroll-mt-24 print:scroll-m-0 transition-all duration-500';
+                li.style.border = `2px solid ${itemColor}`;
+                
+                // 使用 .slice(0, 3) 確保只取前三名的檢修方向
+                const detailsHtml = Array.from(item.details.values())
+                    .sort((a, b) => b.count - a.count)
+                    .slice(0, 3) 
+                    .map((d, dIndex) => {
+                        return `
+                        <div class="analysis-block mt-3 text-sm input-3d p-3 flex flex-wrap items-center gap-x-5 gap-y-2 border border-white/40 font-medium rounded-xl transition-all duration-500" data-analysis="${d.analysis}">
+                            <span class="text-slate-700 w-full sm:w-auto analysis-text">檢修方向: <span class="font-extrabold text-ocean-primary drop-shadow-sm analysis-text">${d.analysis}</span></span>
+                            <span class="text-slate-600 analysis-text">位置: ${d.location}</span><span class="text-slate-600 analysis-text">料號: <span class="font-mono text-sky-700 font-bold analysis-text">${d.partNum}</span></span>
+                            <span class="text-xs font-black text-white ml-auto badge-3d px-2 py-0.5 shadow-sm">${d.count} 次</span>
+                        </div>`;
+                }).join('');
+
+                li.innerHTML = `
+                    <div class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-white" style="background-color: ${itemColor}; box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);"><i data-lucide="lightbulb" class="w-5 h-5"></i></div>
+                    <div class="flex-1 w-full">
+                        <h4 class="font-extrabold text-lg flex justify-between items-center drop-shadow-sm border-b-2 border-white/50 pb-2" style="color: ${itemColor};">
+                            <span class="flex items-center">遇到「${item.reason}」時</span>
+                            <span class="text-xs font-black input-3d px-3 py-1 shadow-sm" style="color: ${itemColor}; border: 1px solid ${itemColor}40;">共 ${item.count} 筆</span>
+                        </h4>
+                        <div class="mt-2">${detailsHtml}</div>
+                    </div>`;
+                ul.appendChild(li);
+            });
+            container.innerHTML = ''; container.appendChild(ul); lucide.createIcons({ root: container });
+        }
+
+        window.highlightAnalysis = function(analysisText, color) {
+            // 關閉下拉選單
+            const popup = document.getElementById('top3TipsPopup');
+            if (popup) popup.classList.add('hidden');
+
+            let firstMatch = null;
+            const items = document.querySelectorAll('#suggestionsContainer li');
+            
+            items.forEach(li => {
+                const blocks = li.querySelectorAll('.analysis-block');
+                let hasMatch = false;
+                
+                blocks.forEach(block => {
+                    if (block.dataset.analysis === analysisText) {
+                        hasMatch = true;
+                        
+                        // 套用同步顏色
+                        block.style.backgroundColor = color;
+                        block.style.borderColor = color;
+                        block.classList.remove('input-3d');
+                        block.classList.add('shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.2)]');
+                        
+                        // 修改文字顏色為白色以確保對比
+                        block.querySelectorAll('.analysis-text').forEach(el => {
+                            const colorClass = Array.from(el.classList).find(c => c.startsWith('text-') && c !== 'text-sm' && c !== 'text-xs');
+                            if (colorClass) {
+                                el.dataset.origColor = colorClass;
+                                el.classList.remove(colorClass);
+                                el.classList.add('text-white');
+                            }
+                        });
+                        
+                        // 2.5秒後恢復原狀
+                        setTimeout(() => {
+                            block.style.backgroundColor = '';
+                            block.style.borderColor = '';
+                            block.classList.add('input-3d');
+                            block.classList.remove('shadow-[inset_2px_2px_4px_rgba(255,255,255,0.3),inset_-2px_-2px_4px_rgba(0,0,0,0.2)]');
+                            
+                            block.querySelectorAll('.analysis-text').forEach(el => {
+                                if (el.dataset.origColor) {
+                                    el.classList.remove('text-white');
+                                    el.classList.add(el.dataset.origColor);
+                                }
+                            });
+                        }, 2500);
+                    }
+                });
+
+                if (hasMatch) {
+                    const origLiBorder = li.style.borderColor;
+                    li.style.borderColor = color;
+                    li.style.boxShadow = `0 0 20px ${color}, inset 3px 3px 6px var(--shadow-dark), inset -3px -3px 6px var(--shadow-light)`;
+                    li.style.transform = 'scale(1.02) translateX(10px)';
+
+                    setTimeout(() => {
+                        li.style.borderColor = origLiBorder;
+                        li.style.boxShadow = '';
+                        li.style.transform = '';
+                    }, 2500);
+
+                    if (!firstMatch) firstMatch = li;
+                }
+            });
+
+            if (firstMatch) {
+                firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                showToast('目前顯示的 Top 3 問題點中沒有包含此檢修方向', 'error');
+            }
+        };
+
+        function updateSection4() {
+            const tbody = document.getElementById('recordsTableBody');
+            const searchVal = document.getElementById('searchInput').value.trim().toLowerCase();
+            const container = document.getElementById('tableScrollContainer');
+            
+            if (autoScrollTimer) clearInterval(autoScrollTimer); isScrollingPaused = false;
+            
+            const filteredData = globalData.filter(row => row[keys.model] === currentModel && getBoardCategory(row).toLowerCase().includes(currentCat4.toLowerCase()) && (searchVal === '' || String(row[keys.serial] || '').toLowerCase().includes(searchVal)));
+            filteredData.sort((a, b) => new Date(a[keys.receiveDate] || 0) - new Date(b[keys.receiveDate] || 0));
+
+            if (filteredData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="14" class="px-6 py-10 text-center font-bold text-sky-600 input-3d m-4 block">找不到符合條件的紀錄</td></tr>`; return;
+            }
+
+            const rowsHtml = filteredData.map(row => {
+                const rowCat = getBoardCategory(row);
+                const catColorClass = currentCat4 === 'MB' ? "text-ocean-primary border-ocean-primary/20" : (currentCat4 === 'BP' ? "text-cyan-700 border-cyan-700/20" : "text-sky-700 border-sky-700/20"); 
+                return `<tr>
+                    <td>${row[keys.receiveDate] || ''}</td><td>${row[keys.returnDate] || ''}</td><td>${row[keys.type] || ''}</td><td class="font-mono">${row[keys.rmaNumber] || ''}</td><td class="font-bold text-sky-900">${row[keys.model] || ''}</td>
+                    <td><span class="input-3d px-3 py-1.5 rounded-lg text-xs font-black shadow-sm border ${catColorClass}">${currentCat4}</span></td>
+                    <td><span class="font-mono font-bold text-blue-600 drop-shadow-sm">${row[keys.serial] || ''}</span></td><td><span class="font-extrabold text-teal-600 drop-shadow-sm">${row[keys.reason] || ''}</span></td>
+                    <td><span class="font-bold text-rose-600">${row[keys.reasonDesc] || ''}</span></td><td>${row[keys.analysis] || ''}</td><td><span class="font-bold text-amber-600">${row[keys.repairDesc] || ''}</span></td>
+                    <td>${row[keys.location] || ''}</td><td class="font-mono font-bold text-sky-700">${row[keys.partNum] || ''}</td><td class="break-words max-w-xs leading-relaxed">${row[keys.repairNote] || ''}</td>
+                </tr>`;
+            }).join('');
+
+            tbody.innerHTML = rowsHtml; if (container) container.scrollTop = 0;
+
+            if (filteredData.length > 5 && container) {
+                requestAnimationFrame(() => {
+                    const originalHeight = tbody.scrollHeight;
+                    tbody.innerHTML = rowsHtml + rowsHtml.replace(/<tr>/g, '<tr class="no-print">').repeat(3);
+                    autoScrollTimer = setInterval(() => { if (!isScrollingPaused) container.scrollTop = (container.scrollTop >= originalHeight) ? container.scrollTop - originalHeight : container.scrollTop + 1; }, 35); 
+                });
+            }
+        }
+    </script>
+</body>
+</html>
