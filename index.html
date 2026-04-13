@@ -167,28 +167,6 @@
 
         .toast-hide { transform: translateY(100%); opacity: 0; }
 
-        /* ======== 手機強制橫向模式 ======== */
-        @media screen and (max-width: 768px) {
-            html.force-landscape-mode-html {
-                overflow: hidden !important;
-                width: 100vw;
-                height: 100vh;
-            }
-            body.force-landscape-mode {
-                width: 100vh !important;
-                height: 100vw !important;
-                min-height: 100vw !important;
-                transform: rotate(90deg) !important;
-                transform-origin: top left !important;
-                position: absolute !important;
-                top: 0 !important;
-                left: 100vw !important;
-                overflow-x: hidden !important;
-                overflow-y: auto !important;
-                margin: 0 !important;
-            }
-        }
-
         /* ======== 列印設定 ======== */
         @media print {
             @page { size: A4 portrait; margin: 10mm; }
@@ -690,11 +668,6 @@
         </div>
     </div>
 
-    <!-- 手機版強制橫向按鈕 -->
-    <button onclick="toggleLandscapeMode()" id="landscapeToggleBtn" class="md:hidden fixed bottom-6 left-6 z-[200] btn-3d-primary w-14 h-14 rounded-full flex items-center justify-center shadow-[4px_4px_15px_rgba(0,0,0,0.3)] no-print transition-all duration-500">
-        <i data-lucide="smartphone" id="landscapeIcon" class="w-6 h-6 text-white transition-transform duration-500"></i>
-    </button>
-
     <!-- Toast Container -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-[200] flex flex-col gap-4 pointer-events-none no-print"></div>
 
@@ -767,37 +740,6 @@
             ...(isDoughnut && { cutout: '55%' })
         });
 
-        // --- 手機強制橫向顯示功能 ---
-        let isLandscape = false;
-        window.toggleLandscapeMode = function() {
-            isLandscape = !isLandscape;
-            const body = document.body;
-            const html = document.documentElement;
-            const icon = document.getElementById('landscapeIcon');
-            
-            if (isLandscape) {
-                html.classList.add('force-landscape-mode-html');
-                body.classList.add('force-landscape-mode');
-                icon.style.transform = 'rotate(90deg)';
-                showToast('已強制轉為橫向，請將手機逆時針轉向', 'success');
-            } else {
-                html.classList.remove('force-landscape-mode-html');
-                body.classList.remove('force-landscape-mode');
-                icon.style.transform = 'rotate(0deg)';
-                showToast('已恢復直向顯示模式', 'success');
-            }
-            
-            // 重新觸發 resize，讓圖表和背景重新抓取維度
-            setTimeout(() => {
-                window.dispatchEvent(new Event('resize'));
-                if (pieChartModelsInstance) pieChartModelsInstance.resize();
-                if (pieChartAllReasonsInstance) pieChartAllReasonsInstance.resize();
-                if (pieChartRepairDescInstance) pieChartRepairDescInstance.resize();
-                if (pieChartCategoryInstance) pieChartCategoryInstance.resize();
-                if (barChartInstance) barChartInstance.resize();
-            }, 100);
-        };
-
         function getBoardCategory(row) {
             if (row[keys.category]) return String(row[keys.category]).trim();
             return '未分類';
@@ -847,14 +789,8 @@
             const connectionDistance = 140; // 節點連線的感應距離
 
             function resize() {
-                // 如果是強制橫向模式，畫布寬高需互換以符合實際畫面
-                if (document.body.classList.contains('force-landscape-mode')) {
-                    width = canvas.width = window.innerHeight;
-                    height = canvas.height = window.innerWidth;
-                } else {
-                    width = canvas.width = window.innerWidth;
-                    height = canvas.height = window.innerHeight;
-                }
+                width = canvas.width = window.innerWidth;
+                height = canvas.height = window.innerHeight;
             }
             window.addEventListener('resize', resize);
             resize();
@@ -1690,8 +1626,8 @@
                 if (top3TipBtn) top3TipBtn.classList.remove('hidden');
                 let top3Html = '';
                 
-                // 取出【全部】檢修方向
-                for (let i = 0; i < sortedGlobalAnalysis.length; i++) {
+                // 取出【前三名】檢修方向
+                for (let i = 0; i < Math.min(3, sortedGlobalAnalysis.length); i++) {
                     const analysisText = sortedGlobalAnalysis[i][0];
                     const count = sortedGlobalAnalysis[i][1].count;
                     const locArray = Array.from(sortedGlobalAnalysis[i][1].locations);
@@ -1722,8 +1658,8 @@
             const ul = document.createElement('ul');
             ul.className = 'space-y-4 pb-2 max-h-[420px] overflow-y-auto pr-3 print:max-h-none print:overflow-visible print:pr-0';
             
-            // 加入 .slice(0, 3) 確保只會顯示前三名的維修問題點
-            sortedItems.slice(0, 3).forEach((item, index) => {
+            // 顯示所有的維修問題點
+            sortedItems.forEach((item, index) => {
                 // 整個問題點外框的顏色維持圓餅圖預設顏色
                 const itemColor = pieColors[index % pieColors.length];
                 
@@ -1732,10 +1668,9 @@
                 li.className = 'list-item-3d scroll-mt-24 print:scroll-m-0 transition-all duration-500';
                 li.style.border = `2px solid ${itemColor}`;
                 
-                // 使用 .slice(0, 3) 確保只取前三名的檢修方向
+                // 顯示所有的檢修方向
                 const detailsHtml = Array.from(item.details.values())
                     .sort((a, b) => b.count - a.count)
-                    .slice(0, 3) 
                     .map((d, dIndex) => {
                         return `
                         <div class="analysis-block mt-3 text-sm input-3d p-3 flex flex-wrap items-center gap-x-5 gap-y-2 border border-white/40 font-medium rounded-xl transition-all duration-500" data-analysis="${d.analysis}">
