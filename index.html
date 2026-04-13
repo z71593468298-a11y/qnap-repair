@@ -68,6 +68,7 @@
             border-radius: 20px; 
             box-shadow: 10px 10px 20px var(--shadow-dark), -10px -10px 20px var(--shadow-light); 
             padding: 1.5rem; margin-bottom: 2rem; border: 1px solid rgba(255,255,255,0.6);
+            max-width: 100%;
         }
 
         .chart-3d-container {
@@ -322,57 +323,57 @@
     <header class="header-3d sticky top-0 left-0 w-full z-50 print:pb-2 print:pt-0">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 print:py-1 flex flex-col sm:flex-row justify-between items-center gap-4 print:gap-2">
             <div class="flex items-center gap-4">
-                <div class="badge-3d w-10 h-10 shadow-md">
+                <div class="badge-3d w-10 h-10 shadow-md shrink-0">
                     <i data-lucide="waves" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-extrabold tracking-tight text-ocean-primary drop-shadow-sm print:text-xl">QNAP 板卡維修</h1>
-                    <p class="text-sky-600 text-sm font-bold flex items-center gap-2 print:hidden">
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-ocean-primary drop-shadow-sm print:text-xl">QNAP 板卡維修</h1>
+                    <p class="text-sky-600 text-xs sm:text-sm font-bold flex items-center gap-2 print:hidden">
                         Repair Data Analysis System
                     </p>
                 </div>
             </div>
-            <div class="flex items-center gap-4 no-print">
-                <div id="clockDisplay" class="input-3d font-mono px-4 py-2 rounded-xl text-md font-bold text-ocean-primary hidden sm:block border border-white/50"></div>
-                <button onclick="exportToPDF()" class="btn-3d-white px-4 py-2.5 rounded-xl text-sm flex items-center gap-2" title="將畫面匯出成 PDF (A4 置中版)">
-                    <i data-lucide="file-down" class="w-5 h-5"></i>匯出 PDF
+            <div class="flex flex-wrap items-center justify-center sm:justify-end gap-3 w-full sm:w-auto no-print mt-3 sm:mt-0">
+                <div id="clockDisplay" class="input-3d font-mono px-4 py-2 rounded-xl text-md font-bold text-ocean-primary hidden lg:block border border-white/50"></div>
+                <button onclick="exportToPDF()" class="btn-3d-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm flex items-center gap-2" title="將畫面匯出成 PDF (A4 置中版)">
+                    <i data-lucide="file-down" class="w-4 h-4 sm:w-5 sm:h-5"></i>匯出 PDF
                 </button>
-                <button onclick="window.print()" class="btn-3d-white px-4 py-2.5 rounded-xl text-sm flex items-center gap-2">
-                    <i data-lucide="printer" class="w-5 h-5"></i>列印報表
+                <button onclick="window.print()" class="btn-3d-white px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm flex items-center gap-2">
+                    <i data-lucide="printer" class="w-4 h-4 sm:w-5 sm:h-5"></i>列印
                 </button>
-                <button onclick="confirmClearImportData()" class="btn-3d-danger px-4 py-2.5 rounded-xl text-sm flex items-center gap-2" title="僅清除匯入的資料，保留手動新增">
-                    <i data-lucide="trash-2" class="w-5 h-5"></i>清除匯入
+                <button onclick="confirmClearImportData()" class="btn-3d-danger px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl text-sm flex items-center gap-2" title="僅清除匯入的資料，保留手動新增">
+                    <i data-lucide="trash-2" class="w-4 h-4 sm:w-5 sm:h-5"></i>清匯入
                 </button>
-                <label for="excelUpload" class="cursor-pointer btn-3d-primary px-5 py-2.5 rounded-xl text-sm flex items-center gap-2">
-                    <i data-lucide="file-spreadsheet" class="w-5 h-5"></i>匯入 Excel
+                <label for="excelUpload" class="cursor-pointer btn-3d-primary px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-sm flex items-center gap-2">
+                    <i data-lucide="file-spreadsheet" class="w-4 h-4 sm:w-5 sm:h-5"></i>匯入 Excel
                 </label>
                 <input type="file" id="excelUpload" accept=".xlsx, .xls, .csv" class="hidden">
             </div>
         </div>
     </header>
 
-    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col gap-8">
-        <div class="print:break-inside-avoid w-full">
+    <main class="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex flex-col gap-8 min-w-0">
+        <div class="print:break-inside-avoid w-full min-w-0">
             <!-- (1) Control Panel: Filters -->
-            <section id="section1" class="section-card flex flex-col md:flex-row items-center justify-between gap-4 print:mb-2 print:p-3 relative z-40 w-full">
-                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1 w-full md:w-auto relative" id="modelSelectContainer">
+            <section id="section1" class="section-card flex flex-col md:flex-row items-center justify-between gap-4 print:mb-2 print:p-3 relative z-40 w-full min-w-0">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1 w-full md:w-auto relative min-w-0" id="modelSelectContainer">
                     <div class="flex items-center gap-2 shrink-0">
                         <label class="text-lg font-extrabold text-sky-900 drop-shadow-sm flex items-center gap-2">
-                            <div class="badge-3d w-8 h-8 !bg-rose-500 !border-rose-400 shadow-sm"><i data-lucide="server" class="w-4 h-4 text-white"></i></div>
+                            <div class="badge-3d w-8 h-8 !bg-rose-500 !border-rose-400 shadow-sm shrink-0"><i data-lucide="server" class="w-4 h-4 text-white"></i></div>
                             選擇機種
                         </label>
                     </div>
-                    <div class="flex items-center gap-3 w-full max-w-xl">
-                        <div class="relative shrink-0 w-[120px] sm:w-[150px] print:hidden">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-4 h-4 text-sky-500"></i></div>
-                            <input type="text" id="seriesSearchInput" placeholder="搜系列(如 TS)" class="w-full input-3d pl-9 p-3 text-sm font-bold text-sky-900 border border-white/50 focus:ring-ocean-accent focus:ring-2 transition-all" oninput="searchSeries()" onclick="openModelMenu()">
+                    <div class="flex items-center gap-3 w-full max-w-xl min-w-0">
+                        <div class="relative shrink-0 w-[100px] sm:w-[150px] print:hidden">
+                            <div class="absolute inset-y-0 left-0 pl-2 sm:pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-4 h-4 text-sky-500"></i></div>
+                            <input type="text" id="seriesSearchInput" placeholder="搜系列(如 TS)" class="w-full input-3d pl-8 sm:pl-9 p-2.5 sm:p-3 text-sm font-bold text-sky-900 border border-white/50 focus:ring-ocean-accent focus:ring-2 transition-all" oninput="searchSeries()" onclick="openModelMenu()">
                         </div>
-                        <div class="relative flex-1">
-                            <div id="customModelSelect" class="w-full input-3d p-3 text-base font-black text-ocean-primary focus:ring-2 focus:ring-ocean-accent border border-white/50 cursor-pointer flex justify-between items-center transition-all" onclick="toggleModelMenu(event)">
+                        <div class="relative flex-1 min-w-0">
+                            <div id="customModelSelect" class="w-full input-3d p-2.5 sm:p-3 text-sm sm:text-base font-black text-ocean-primary focus:ring-2 focus:ring-ocean-accent border border-white/50 cursor-pointer flex justify-between items-center transition-all min-w-0" onclick="toggleModelMenu(event)">
                                 <span id="selectedModelText" class="truncate">載入中...</span>
-                                <i data-lucide="chevron-down" class="w-5 h-5 text-sky-500 drop-shadow-sm transition-transform duration-300" id="modelSelectIcon"></i>
+                                <i data-lucide="chevron-down" class="w-5 h-5 text-sky-500 drop-shadow-sm transition-transform duration-300 shrink-0" id="modelSelectIcon"></i>
                             </div>
-                            <div id="modelDropdownMenu" class="absolute left-0 top-full mt-3 w-[320px] sm:w-[500px] md:w-[750px] max-w-[85vw] z-[100] bg-[var(--base-color)] rounded-2xl shadow-[10px_10px_30px_rgba(0,0,0,0.15),-10px_-10px_30px_rgba(255,255,255,0.8)] border border-white/60 hidden flex-col max-h-[65vh] overflow-y-auto p-5 opacity-0 transition-opacity duration-200 pointer-events-auto print:hidden">
+                            <div id="modelDropdownMenu" class="absolute left-0 top-full mt-3 w-[calc(100vw-2rem)] sm:w-[500px] md:w-[750px] max-w-[90vw] z-[100] bg-[var(--base-color)] rounded-2xl shadow-[10px_10px_30px_rgba(0,0,0,0.15),-10px_-10px_30px_rgba(255,255,255,0.8)] border border-white/60 hidden flex-col max-h-[65vh] overflow-y-auto p-4 sm:p-5 opacity-0 transition-opacity duration-200 pointer-events-auto print:hidden">
                                 <div id="modelMenuContent" class="flex flex-col gap-5 relative"></div>
                             </div>
                         </div>
@@ -386,24 +387,24 @@
             <!-- (2) Global Charts Section -->
             <section id="section2" class="section-card print:mb-2 print:p-3 w-full">
                 <h2 class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 mb-6 pb-2 border-b-2 border-white drop-shadow-sm print:mb-2 print:pb-1">
-                    <span class="badge-3d w-8 h-8 font-black no-print">2</span>維修數據(全)
+                    <span class="badge-3d w-8 h-8 font-black no-print shrink-0">2</span>維修數據(全)
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 mb-2 print:gap-4 w-full">
-                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full">
+                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full min-w-0">
                         <h3 class="text-sm font-bold text-center text-sky-800 mb-4 input-3d py-2 w-3/4 mx-auto border border-white/40 print:mb-1 print:py-1">機種佔比(前十)</h3>
-                        <div class="flex-1 relative w-full"><canvas id="pieChartModels"></canvas></div>
+                        <div class="flex-1 relative w-full min-w-0"><canvas id="pieChartModels"></canvas></div>
                     </div>
-                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full">
+                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full min-w-0">
                         <h3 class="text-sm font-bold text-center text-sky-800 mb-4 input-3d py-2 w-3/4 mx-auto border border-white/40 print:mb-1 print:py-1">損壞原因(前十)</h3>
-                        <div class="flex-1 relative w-full"><canvas id="pieChartAllReasons"></canvas></div>
+                        <div class="flex-1 relative w-full min-w-0"><canvas id="pieChartAllReasons"></canvas></div>
                     </div>
-                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full">
+                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full min-w-0">
                         <h3 class="text-sm font-bold text-center text-sky-800 mb-4 input-3d py-2 w-3/4 mx-auto border border-white/40 print:mb-1 print:py-1">維修代碼(前十)</h3>
-                        <div class="flex-1 relative w-full"><canvas id="pieChartRepairDesc"></canvas></div>
+                        <div class="flex-1 relative w-full min-w-0"><canvas id="pieChartRepairDesc"></canvas></div>
                     </div>
-                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full">
+                    <div class="relative min-h-[350px] flex flex-col chart-3d-container p-5 print:p-2 w-full min-w-0">
                         <h3 class="text-sm font-bold text-center text-sky-800 mb-4 input-3d py-2 w-3/4 mx-auto border border-white/40 print:mb-1 print:py-1">產品類別</h3>
-                        <div class="flex-1 relative w-full"><canvas id="pieChartCategory"></canvas></div>
+                        <div class="flex-1 relative w-full min-w-0"><canvas id="pieChartCategory"></canvas></div>
                     </div>
                 </div>
             </section>
@@ -411,56 +412,57 @@
 
         <!-- (3) Suggestions & Detail Charts Section -->
         <section id="section3" class="section-card print:p-0 print:border-none print:shadow-none print:bg-none w-full">
-            <h2 class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 mb-4 drop-shadow-sm print:hidden">
-                <span class="badge-3d w-8 h-8 font-black no-print">3</span>
-                <span id="suggestionTitleModel" class="text-ocean-accent input-3d px-3 py-1 text-lg">未選取</span> 維修方向與問題點
+            <h2 class="text-xl font-extrabold text-ocean-primary flex flex-wrap items-center gap-3 mb-4 drop-shadow-sm print:hidden w-full">
+                <span class="badge-3d w-8 h-8 font-black no-print shrink-0">3</span>
+                <span id="suggestionTitleModel" class="text-ocean-accent input-3d px-3 py-1 text-lg truncate max-w-full">未選取</span> 維修方向與問題點
             </h2>
-            <div class="flex gap-3 mb-6 no-print px-2 overflow-x-auto tabs-scrollbar pb-3 pt-2">
-                <button class="tab-btn tab-btn-sec3 active" data-cat="MB">MB</button>
-                <button class="tab-btn tab-btn-sec3" data-cat="BP">BP</button>
-                <button class="tab-btn tab-btn-sec3" data-cat="Switch">Switch</button>
-                <button class="tab-btn tab-btn-sec3" data-cat="Router">Router</button>
-                <button class="tab-btn tab-btn-sec3" data-cat="RAM">RAM</button>
-                <button class="tab-btn tab-btn-sec3" data-cat="HDD">HDD</button>
-                <button class="tab-btn tab-btn-sec3" data-cat="LAN card">LAN card</button>
+            <div class="flex gap-3 mb-6 no-print px-2 overflow-x-auto tabs-scrollbar pb-3 pt-2 w-full">
+                <button class="tab-btn tab-btn-sec3 active shrink-0" data-cat="MB">MB</button>
+                <button class="tab-btn tab-btn-sec3 shrink-0" data-cat="BP">BP</button>
+                <button class="tab-btn tab-btn-sec3 shrink-0" data-cat="Switch">Switch</button>
+                <button class="tab-btn tab-btn-sec3 shrink-0" data-cat="Router">Router</button>
+                <button class="tab-btn tab-btn-sec3 shrink-0" data-cat="RAM">RAM</button>
+                <button class="tab-btn tab-btn-sec3 shrink-0" data-cat="HDD">HDD</button>
+                <button class="tab-btn tab-btn-sec3 shrink-0" data-cat="LAN card">LAN card</button>
             </div>
-            <div id="sec3Content" class="flex flex-col gap-8 print:gap-0 print:block w-full">
+            <div id="sec3Content" class="flex flex-col gap-8 print:gap-0 print:block w-full min-w-0">
                 <!-- Bar Chart -->
-                <div id="sec3BarChart" class="relative min-h-[500px] flex flex-col chart-3d-container p-6 print:p-2 print:border-none print:shadow-none print:bg-none w-full">
-                    <h3 class="text-sm font-bold text-center text-sky-900 mb-6 input-3d py-3 border border-white/50 print:text-lg print:border-none print:bg-transparent print:shadow-none print:mb-2">
+                <div id="sec3BarChart" class="relative min-h-[500px] flex flex-col chart-3d-container p-6 print:p-2 print:border-none print:shadow-none print:bg-none w-full min-w-0">
+                    <h3 class="text-sm font-bold text-center text-sky-900 mb-6 input-3d py-3 border border-white/50 print:text-lg print:border-none print:bg-transparent print:shadow-none print:mb-2 w-full truncate px-2">
                         單一型號 <span id="barChartTitleModel" class="text-ocean-primary font-black underline decoration-2 mx-1">未選取</span> 
                         (<span id="barChartTitleCat" class="text-ocean-accent font-black">MB</span>) 原因分佈
                     </h3>
                     <div class="flex-1 w-full overflow-x-auto overflow-y-hidden pb-2 print:overflow-visible">
-                        <div id="barChartWrapper" class="relative h-full min-h-[420px] pb-8 min-w-full">
+                        <div id="barChartWrapper" class="relative h-full min-h-[420px] pb-8 min-w-[600px] sm:min-w-full">
                             <canvas id="barChart"></canvas>
                             <div id="barChartButtonsContainer" class="absolute top-0 left-0 w-full h-full pointer-events-none no-print"></div>
                         </div>
                     </div>
                 </div>
                 <!-- Suggestions List -->
-                <div id="sec3Suggestions" class="chart-3d-container p-6 print:p-2 print:mt-0 print:pt-4 print:border-none print:shadow-none print:bg-none w-full">
+                <div id="sec3Suggestions" class="chart-3d-container p-4 sm:p-6 print:p-2 print:mt-0 print:pt-4 print:border-none print:shadow-none print:bg-none w-full min-w-0">
                     
-                    <div class="flex justify-between items-start mb-6 pb-3 border-b-2 border-white relative w-full">
-                        <h3 class="text-lg font-extrabold text-ocean-primary flex items-center gap-3 print:text-xl print:border-ocean-primary flex-wrap w-full">
-                            <div class="badge-3d w-8 h-8 no-print"><i data-lucide="list-checks" class="w-4 h-4"></i></div>
+                    <div class="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center mb-6 pb-3 border-b-2 border-white relative w-full gap-4">
+                        <h3 class="text-lg font-extrabold text-ocean-primary flex flex-wrap items-center gap-3 print:text-xl print:border-ocean-primary w-full sm:w-auto">
+                            <div class="badge-3d w-8 h-8 no-print shrink-0"><i data-lucide="list-checks" class="w-4 h-4"></i></div>
                             維修問題點 (<span id="suggTitleCat" class="text-ocean-accent">MB</span>)
-                            
-                            <!-- 點擊展開的提示按鈕區塊 -->
-                            <div class="ml-auto relative no-print">
-                                <button onclick="toggleTop3Tips()" id="top3TipBtn" class="text-white text-sm md:text-base font-black drop-shadow-sm tracking-wide bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 transition-all px-4 py-2 rounded-xl shadow-[4px_4px_8px_var(--shadow-dark),-4px_-4px_8px_var(--shadow-light)] active:shadow-inner flex items-center gap-2 hidden">
-                                    <i data-lucide="zap" class="w-4 h-4"></i> 初步檢修可嘗試
-                                </button>
-                                
-                                <!-- 隱藏的下拉提示框 -->
-                                <div id="top3TipsPopup" class="hidden absolute right-0 top-full mt-3 w-80 bg-[var(--base-color)] border border-white/80 shadow-[10px_10px_30px_rgba(0,0,0,0.15),-5px_-5px_15px_rgba(255,255,255,0.7)] rounded-2xl p-5 z-50 transform origin-top-right transition-all max-h-[60vh] overflow-y-auto">
-                                    <h4 class="text-sm font-extrabold text-sky-900 mb-3 border-b-2 border-white pb-2 flex items-center gap-2 sticky top-0 bg-[var(--base-color)] z-10">
-                                        <i data-lucide="flame" class="w-4 h-4 text-rose-500"></i> Top 3 初步排除方向統計
-                                    </h4>
-                                    <div id="top3TipsContent" class="flex flex-col gap-3"></div>
-                                </div>
-                            </div>
                         </h3>
+                            
+                        <!-- 點擊展開的提示按鈕區塊 -->
+                        <div class="w-full sm:w-auto flex justify-end relative no-print">
+                            <button onclick="toggleTop3Tips()" id="top3TipBtn" class="text-white text-sm md:text-base font-black drop-shadow-sm tracking-wide bg-gradient-to-r from-rose-500 to-red-500 hover:from-rose-600 hover:to-red-600 transition-all px-4 py-2 rounded-xl shadow-[4px_4px_8px_var(--shadow-dark),-4px_-4px_8px_var(--shadow-light)] active:shadow-inner flex items-center gap-2 hidden">
+                                <i data-lucide="zap" class="w-4 h-4"></i> 初步檢修可嘗試
+                            </button>
+                            
+                            <!-- 隱藏的下拉提示框 -->
+                            <div id="top3TipsPopup" class="hidden absolute right-0 sm:-right-2 top-full mt-3 w-[calc(100vw-2.5rem)] sm:w-[350px] max-w-sm bg-[var(--base-color)] border border-white/80 shadow-[10px_10px_30px_rgba(0,0,0,0.15),-5px_-5px_15px_rgba(255,255,255,0.7)] rounded-2xl p-4 sm:p-5 z-50 transform origin-top-right transition-all max-h-[60vh] overflow-y-auto">
+                                <h4 class="text-sm font-extrabold text-sky-900 mb-3 border-b-2 border-white pb-2 flex items-center gap-2 sticky top-0 bg-[var(--base-color)] z-10">
+                                    <i data-lucide="flame" class="w-4 h-4 text-rose-500 shrink-0"></i> 
+                                    <span class="truncate">Top 3 初步排除方向統計</span>
+                                </h4>
+                                <div id="top3TipsContent" class="flex flex-col gap-3"></div>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="suggestionsContainer" class="text-slate-600 w-full">
@@ -471,35 +473,35 @@
         </section>
 
         <!-- (4) Records Table -->
-        <section id="section4" class="section-card flex-1 flex flex-col w-full">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4 print:hidden">
-                <h2 class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 drop-shadow-sm">
-                    <span class="badge-3d w-8 h-8 font-black no-print">4</span>維修紀錄                
+        <section id="section4" class="section-card flex-1 flex flex-col w-full min-w-0">
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-4 print:hidden w-full">
+                <h2 class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 drop-shadow-sm shrink-0">
+                    <span class="badge-3d w-8 h-8 font-black no-print shrink-0">4</span>維修紀錄                
                 </h2>
-                <div class="w-full md:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 no-print">
-                    <div class="flex items-center gap-3">
-                        <button onclick="openAddModal()" class="btn-3d-primary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2"><i data-lucide="plus" class="w-4 h-4"></i> 新增</button>
-                        <button onclick="openManageCustomModal()" class="btn-3d-secondary px-4 py-2.5 rounded-xl text-sm flex items-center gap-2"><i data-lucide="calendar-days" class="w-4 h-4"></i> 行事曆管理</button>
-                        <button onclick="confirmClearCustomData()" class="btn-3d-white text-rose-500 px-4 py-2.5 rounded-xl text-sm flex items-center gap-2"><i data-lucide="rotate-ccw" class="w-4 h-4"></i> 重置</button>
+                <div class="w-full lg:w-auto flex flex-col sm:flex-row items-stretch sm:items-center gap-3 no-print">
+                    <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                        <button onclick="openAddModal()" class="btn-3d-primary flex-1 sm:flex-none px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5"><i data-lucide="plus" class="w-4 h-4"></i> 新增</button>
+                        <button onclick="openManageCustomModal()" class="btn-3d-secondary flex-1 sm:flex-none px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5"><i data-lucide="calendar-days" class="w-4 h-4"></i> 管理</button>
+                        <button onclick="confirmClearCustomData()" class="btn-3d-white text-rose-500 flex-1 sm:flex-none px-3 sm:px-4 py-2.5 rounded-xl text-xs sm:text-sm flex items-center justify-center gap-1.5"><i data-lucide="rotate-ccw" class="w-4 h-4"></i> 重置</button>
                     </div>
-                    <div class="relative flex-1 sm:w-64 mt-3 sm:mt-0">
+                    <div class="relative flex-1 sm:w-64 mt-2 sm:mt-0 w-full min-w-0">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none"><i data-lucide="search" class="w-5 h-5 text-sky-500"></i></div>
-                        <input type="text" id="searchInput" placeholder="搜尋序號..." class="w-full input-3d pl-10 p-3 text-sm text-sky-900 font-bold border border-white/50">
+                        <input type="text" id="searchInput" placeholder="搜尋序號..." class="w-full input-3d pl-10 p-2.5 sm:p-3 text-sm text-sky-900 font-bold border border-white/50">
                     </div>
                 </div>
             </div>
             
-            <div class="flex gap-3 mb-5 no-print px-2 overflow-x-auto tabs-scrollbar pb-3 pt-2 mt-2 md:mt-0">
-                <button class="tab-btn tab-btn-sec4 active" data-cat="MB">MB</button>
-                <button class="tab-btn tab-btn-sec4" data-cat="BP">BP</button>
-                <button class="tab-btn tab-btn-sec4" data-cat="Switch">Switch</button>
-                <button class="tab-btn tab-btn-sec4" data-cat="Router">Router</button>
-                <button class="tab-btn tab-btn-sec4" data-cat="RAM">RAM</button>
-                <button class="tab-btn tab-btn-sec4" data-cat="HDD">HDD</button>
-                <button class="tab-btn tab-btn-sec4" data-cat="LAN card">LAN card</button>
+            <div class="flex gap-3 mb-5 no-print px-2 overflow-x-auto tabs-scrollbar pb-3 pt-2 mt-2 md:mt-0 w-full">
+                <button class="tab-btn tab-btn-sec4 active shrink-0" data-cat="MB">MB</button>
+                <button class="tab-btn tab-btn-sec4 shrink-0" data-cat="BP">BP</button>
+                <button class="tab-btn tab-btn-sec4 shrink-0" data-cat="Switch">Switch</button>
+                <button class="tab-btn tab-btn-sec4 shrink-0" data-cat="Router">Router</button>
+                <button class="tab-btn tab-btn-sec4 shrink-0" data-cat="RAM">RAM</button>
+                <button class="tab-btn tab-btn-sec4 shrink-0" data-cat="HDD">HDD</button>
+                <button class="tab-btn tab-btn-sec4 shrink-0" data-cat="LAN card">LAN card</button>
             </div>
 
-            <div id="tableScrollContainer" class="table-container-3d overflow-x-auto overflow-y-auto max-h-[280px] print:max-h-none print:overflow-visible print:border-none print:shadow-none w-full">
+            <div id="tableScrollContainer" class="table-container-3d overflow-x-auto overflow-y-auto max-h-[280px] print:max-h-none print:overflow-visible print:border-none print:shadow-none w-full max-w-full">
                 <table class="table-3d min-w-max relative w-full">
                     <thead class="sticky top-0 z-20 bg-[var(--base-color)] print:static print:bg-white shadow-sm">
                         <tr class="hidden print:table-row bg-white">
@@ -535,21 +537,21 @@
         </section>
 
         <!-- (5) Reference Info -->
-        <section id="section5" class="section-card w-full">
+        <section id="section5" class="section-card w-full min-w-0">
             <h2 class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 mb-6 pb-2 border-b-2 border-white drop-shadow-sm">
-                <span class="badge-3d w-8 h-8 font-black no-print">5</span>Intel 主機板常見 Q-CODE 參考指南
+                <span class="badge-3d w-8 h-8 font-black no-print shrink-0">5</span>Intel 主機板常見 Q-CODE 參考指南
             </h2>
-            <div class="table-container-3d overflow-x-auto w-full">
-                <table class="table-3d min-w-full">
+            <div class="table-container-3d overflow-x-auto w-full max-w-full">
+                <table class="table-3d min-w-max w-full">
                     <thead><tr><th class="w-24 whitespace-nowrap uppercase tracking-wider">Q-CODE</th><th class="w-1/3 whitespace-nowrap uppercase tracking-wider">狀態 / 故障說明</th><th class="whitespace-nowrap uppercase tracking-wider">常見除錯方向</th></tr></thead>
                     <tbody>
-                        <tr><td class="font-mono font-black text-sky-600 text-lg">00</td><td class="font-bold">CPU 錯誤 / 未偵測到 CPU</td><td class="text-sm">檢查 CPU 是否正確安裝、底部接點有無髒汙或斷針、EPS 12V 供電是否接上、CPU 供電模組是否短路。</td></tr>
-                        <tr><td class="font-mono font-black text-sky-600 text-lg">53 / 55</td><td class="font-bold">記憶體初始化錯誤</td><td class="text-sm">重插記憶體、使用橡皮擦清理金手指、測試單根記憶體。若仍報錯，需檢查 CPU Socket 腳座針腳是否彎曲變形。</td></tr>
-                        <tr><td class="font-mono font-black text-cyan-600 text-lg">62</td><td class="font-bold">PCH 執行階段服務安裝</td><td class="text-sm">通常與 PCIe 裝置或顯示卡(VGA)有關。請檢查 PCIe 插槽接觸狀態、顯示卡輔助供電是否正常，或重新插拔顯示卡。</td></tr>
-                        <tr><td class="font-mono font-black text-cyan-600 text-lg">99</td><td class="font-bold">Super IO 初始化</td><td class="text-sm">常見於 I/O 周邊卡住。檢查主機板上的風扇接頭、前置 USB 設備、鍵盤滑鼠，或是 PCIe 擴充卡是否短路或異常。</td></tr>
-                        <tr><td class="font-mono font-black text-teal-600 text-lg">A0 / A2</td><td class="font-bold">IDE / SATA 初始化 (硬碟偵測)</td><td class="text-sm">顯示 <b>A0</b> 通常代表正常進入系統。若卡在 <b>A2</b>，則需檢查 SATA 排線、M.2 硬碟接觸、SATA Controller 或背板是否異常。</td></tr>
-                        <tr><td class="font-mono font-black text-sky-600 text-lg">b4</td><td class="font-bold">USB 設備熱插拔</td><td class="text-sm">移除所有 USB 外部設備再開機測試，並用手電筒檢查主機板與機殼的 USB 接口是否出現金屬接腳變形短路。</td></tr>
-                        <tr><td class="font-mono font-black text-cyan-600 text-lg">d6</td><td class="font-bold">未偵測到 VGA 輸出設備</td><td class="text-sm">無顯示畫面，系統找不到顯示晶片。檢查獨立顯示卡安裝、螢幕訊號線，或先拔除獨顯切換至內顯進行交叉測試。</td></tr>
+                        <tr><td class="font-mono font-black text-sky-600 text-lg">00</td><td class="font-bold">CPU 錯誤 / 未偵測到 CPU</td><td class="text-sm whitespace-normal">檢查 CPU 是否正確安裝、底部接點有無髒汙或斷針、EPS 12V 供電是否接上、CPU 供電模組是否短路。</td></tr>
+                        <tr><td class="font-mono font-black text-sky-600 text-lg">53 / 55</td><td class="font-bold">記憶體初始化錯誤</td><td class="text-sm whitespace-normal">重插記憶體、使用橡皮擦清理金手指、測試單根記憶體。若仍報錯，需檢查 CPU Socket 腳座針腳是否彎曲變形。</td></tr>
+                        <tr><td class="font-mono font-black text-cyan-600 text-lg">62</td><td class="font-bold">PCH 執行階段服務安裝</td><td class="text-sm whitespace-normal">通常與 PCIe 裝置或顯示卡(VGA)有關。請檢查 PCIe 插槽接觸狀態、顯示卡輔助供電是否正常，或重新插拔顯示卡。</td></tr>
+                        <tr><td class="font-mono font-black text-cyan-600 text-lg">99</td><td class="font-bold">Super IO 初始化</td><td class="text-sm whitespace-normal">常見於 I/O 周邊卡住。檢查主機板上的風扇接頭、前置 USB 設備、鍵盤滑鼠，或是 PCIe 擴充卡是否短路或異常。</td></tr>
+                        <tr><td class="font-mono font-black text-teal-600 text-lg">A0 / A2</td><td class="font-bold">IDE / SATA 初始化 (硬碟偵測)</td><td class="text-sm whitespace-normal">顯示 <b>A0</b> 通常代表正常進入系統。若卡在 <b>A2</b>，則需檢查 SATA 排線、M.2 硬碟接觸、SATA Controller 或背板是否異常。</td></tr>
+                        <tr><td class="font-mono font-black text-sky-600 text-lg">b4</td><td class="font-bold">USB 設備熱插拔</td><td class="text-sm whitespace-normal">移除所有 USB 外部設備再開機測試，並用手電筒檢查主機板與機殼的 USB 接口是否出現金屬接腳變形短路。</td></tr>
+                        <tr><td class="font-mono font-black text-cyan-600 text-lg">d6</td><td class="font-bold">未偵測到 VGA 輸出設備</td><td class="text-sm whitespace-normal">無顯示畫面，系統找不到顯示晶片。檢查獨立顯示卡安裝、螢幕訊號線，或先拔除獨顯切換至內顯進行交叉測試。</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -561,41 +563,41 @@
     <!-- Modal: 新增與編輯 (由 JS 切換狀態，減少 DOM 冗餘) -->
     <div id="recordModal" class="fixed inset-0 bg-slate-900/60 z-[120] hidden items-center justify-center p-4 backdrop-blur-sm no-print">
         <div class="modal-3d w-full max-w-3xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all">
-            <div id="modalHeader" class="px-6 py-5 flex justify-between items-center modal-header-3d">
-                <h3 id="modalTitle" class="text-xl font-extrabold text-ocean-primary flex items-center gap-3 drop-shadow-sm"></h3>
+            <div id="modalHeader" class="px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center modal-header-3d">
+                <h3 id="modalTitle" class="text-lg sm:text-xl font-extrabold text-ocean-primary flex items-center gap-3 drop-shadow-sm"></h3>
                 <button onclick="closeRecordModal()" class="text-sky-600 hover:text-rose-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
             </div>
-            <div class="p-8 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 bg-[var(--base-color)]">
-                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">收件日期</label><input type="date" id="form_receiveDate" class="w-full input-3d p-3 text-sm font-medium"></div>
-                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">送回日期</label><input type="date" id="form_returnDate" class="w-full input-3d p-3 text-sm font-medium"></div>
+            <div class="p-4 sm:p-8 overflow-y-auto flex-1 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 sm:gap-y-6 bg-[var(--base-color)]">
+                <div><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">收件日期</label><input type="date" id="form_receiveDate" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">送回日期</label><input type="date" id="form_returnDate" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium"></div>
                 <div>
-                    <label class="block text-sm font-bold text-sky-900 mb-2 ml-1">類型</label>
-                    <select id="form_type" class="w-full input-3d p-3 text-sm font-medium">
+                    <label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">類型</label>
+                    <select id="form_type" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium">
                         <option value="RMA">RMA</option><option value="QDE">QDE</option><option value="IN">IN</option>
                         <option value="QE">QE</option><option value="JP">JP</option><option value="US">US</option>
                     </select>
                 </div>
-                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">送修單號</label><input type="text" id="form_rmaNumber" placeholder="例如：RMA260100025" class="w-full input-3d p-3 text-sm font-medium"></div>
-                <div><label class="block text-sm font-bold text-rose-600 mb-2 ml-1">型號 <span class="text-rose-500">*必填</span></label><input type="text" id="form_model" placeholder="例如：70-1Q0AV0100" class="w-full input-3d p-3 text-sm font-black text-rose-700"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">送修單號</label><input type="text" id="form_rmaNumber" placeholder="例如：RMA260100025" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-rose-600 mb-1.5 sm:mb-2 ml-1">型號 <span class="text-rose-500">*必填</span></label><input type="text" id="form_model" placeholder="例如：70-1Q0AV0100" class="w-full input-3d p-2.5 sm:p-3 text-sm font-black text-rose-700"></div>
                 <div>
-                    <label class="block text-sm font-bold text-rose-600 mb-2 ml-1">分類 <span class="text-rose-500">*必填</span></label>
-                    <select id="form_category" class="w-full input-3d p-3 text-sm font-black text-rose-700">
+                    <label class="block text-sm font-bold text-rose-600 mb-1.5 sm:mb-2 ml-1">分類 <span class="text-rose-500">*必填</span></label>
+                    <select id="form_category" class="w-full input-3d p-2.5 sm:p-3 text-sm font-black text-rose-700">
                         <option value="MB">MB (主機板)</option><option value="BP">BP (背板)</option><option value="Switch">Switch (交換器)</option>
                         <option value="Router">Router (路由器)</option><option value="RAM">RAM (記憶體)</option><option value="HDD">HDD (硬碟)</option><option value="LAN card">LAN card (網卡)</option>
                     </select>
                 </div>
-                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">序號</label><input type="text" id="form_serial" class="w-full input-3d p-3 text-sm font-mono font-bold text-ocean-primary"></div>
-                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">DOA/RMA原因</label><input type="text" id="form_reason" class="w-full input-3d p-3 text-sm font-medium"></div>
-                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">原因代碼描述</label><input type="text" id="form_reasonDesc" class="w-full input-3d p-3 text-sm font-medium"></div>
-                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">分析結果</label><input type="text" id="form_analysis" class="w-full input-3d p-3 text-sm font-medium"></div>
-                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">維修代碼描述</label><input type="text" id="form_repairDesc" class="w-full input-3d p-3 text-sm font-medium"></div>
-                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">零件位置</label><input type="text" id="form_location" class="w-full input-3d p-3 text-sm font-medium"></div>
-                <div><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">零件料號</label><input type="text" id="form_partNum" class="w-full input-3d p-3 text-sm font-mono font-bold text-ocean-primary"></div>
-                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-2 ml-1">維修註記</label><input type="text" id="form_repairNote" class="w-full input-3d p-3 text-sm font-medium"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">序號</label><input type="text" id="form_serial" class="w-full input-3d p-2.5 sm:p-3 text-sm font-mono font-bold text-ocean-primary"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">DOA/RMA原因</label><input type="text" id="form_reason" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">原因代碼描述</label><input type="text" id="form_reasonDesc" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">分析結果</label><input type="text" id="form_analysis" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">維修代碼描述</label><input type="text" id="form_repairDesc" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">零件位置</label><input type="text" id="form_location" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium"></div>
+                <div><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">零件料號</label><input type="text" id="form_partNum" class="w-full input-3d p-2.5 sm:p-3 text-sm font-mono font-bold text-ocean-primary"></div>
+                <div class="md:col-span-2"><label class="block text-sm font-bold text-sky-900 mb-1.5 sm:mb-2 ml-1">維修註記</label><input type="text" id="form_repairNote" class="w-full input-3d p-2.5 sm:p-3 text-sm font-medium"></div>
             </div>
-            <div id="modalFooter" class="px-6 py-5 border-t border-white/50 flex justify-end gap-4 modal-header-3d rounded-t-none rounded-b-2xl">
-                <button onclick="closeRecordModal()" class="btn-3d-white px-5 py-2.5 rounded-xl text-sm">取消</button>
-                <button id="modalSubmitBtn" onclick="submitRecordForm()" class="btn-3d-primary px-5 py-2.5 rounded-xl text-sm flex items-center gap-2">儲存</button>
+            <div id="modalFooter" class="px-4 sm:px-6 py-4 sm:py-5 border-t border-white/50 flex justify-end gap-4 modal-header-3d rounded-t-none rounded-b-2xl">
+                <button onclick="closeRecordModal()" class="btn-3d-white px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-sm">取消</button>
+                <button id="modalSubmitBtn" onclick="submitRecordForm()" class="btn-3d-primary px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-sm flex items-center gap-2">儲存</button>
             </div>
         </div>
     </div>
@@ -603,32 +605,33 @@
     <!-- Modal: 行事曆管理紀錄 -->
     <div id="manageCustomModal" class="fixed inset-0 bg-slate-900/60 z-[105] hidden items-center justify-center p-4 backdrop-blur-sm no-print">
         <div class="modal-3d w-full max-w-6xl max-h-[90vh] flex flex-col overflow-hidden transform transition-all">
-            <div class="px-6 py-5 flex justify-between items-center modal-header-3d">
-                <h3 class="text-xl font-extrabold text-teal-600 flex items-center gap-3 drop-shadow-sm">
-                    <div class="badge-3d !bg-teal-500 !border-teal-400 w-8 h-8"><i data-lucide="calendar-days" class="w-4 h-4"></i></div> 
-                    維修紀錄管理 <span class="text-sm font-bold text-slate-500 bg-white/50 px-2 py-1 rounded-lg border border-white">(含匯入與新增)</span>
+            <div class="px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center modal-header-3d">
+                <h3 class="text-lg sm:text-xl font-extrabold text-teal-600 flex items-center gap-2 sm:gap-3 drop-shadow-sm">
+                    <div class="badge-3d !bg-teal-500 !border-teal-400 w-6 h-6 sm:w-8 sm:h-8 shrink-0"><i data-lucide="calendar-days" class="w-3 h-3 sm:w-4 sm:h-4"></i></div> 
+                    維修紀錄管理 <span class="text-xs sm:text-sm font-bold text-slate-500 bg-white/50 px-1 sm:px-2 py-0.5 sm:py-1 rounded-lg border border-white whitespace-nowrap">(含匯入與新增)</span>
                 </h3>
-                <button onclick="closeManageCustomModal()" class="text-sky-600 hover:text-rose-500 transition"><i data-lucide="x" class="w-6 h-6"></i></button>
+                <button onclick="closeManageCustomModal()" class="text-sky-600 hover:text-rose-500 transition"><i data-lucide="x" class="w-5 h-5 sm:w-6 sm:h-6"></i></button>
             </div>
-            <div class="flex flex-col md:flex-row flex-1 overflow-hidden bg-[var(--base-color)] p-4 gap-4">
-                <div class="w-full md:w-5/12 lg:w-1/3 chart-3d-container p-6 flex flex-col h-auto md:h-full">
-                    <div class="flex justify-between items-center mb-6">
-                        <button onclick="changeCalendarMonth(-1)" class="btn-3d-white p-2 rounded-xl transition"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
-                        <h4 id="calendarHeader" class="font-extrabold text-xl text-ocean-primary drop-shadow-sm"></h4>
-                        <button onclick="changeCalendarMonth(1)" class="btn-3d-white p-2 rounded-xl transition"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+            <div class="flex flex-col md:flex-row flex-1 overflow-hidden bg-[var(--base-color)] p-3 sm:p-4 gap-4">
+                <div class="w-full md:w-5/12 lg:w-1/3 chart-3d-container p-4 sm:p-6 flex flex-col h-auto md:h-full">
+                    <div class="flex justify-between items-center mb-4 sm:mb-6">
+                        <button onclick="changeCalendarMonth(-1)" class="btn-3d-white p-1.5 sm:p-2 rounded-xl transition"><i data-lucide="chevron-left" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>
+                        <h4 id="calendarHeader" class="font-extrabold text-lg sm:text-xl text-ocean-primary drop-shadow-sm"></h4>
+                        <button onclick="changeCalendarMonth(1)" class="btn-3d-white p-1.5 sm:p-2 rounded-xl transition"><i data-lucide="chevron-right" class="w-4 h-4 sm:w-5 sm:h-5"></i></button>
                     </div>
-                    <div class="grid grid-cols-7 gap-2 text-center text-sm font-black text-sky-700 mb-3 pb-2 border-b-2 border-white/50">
+                    <div class="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs sm:text-sm font-black text-sky-700 mb-2 sm:mb-3 pb-2 border-b-2 border-white/50">
                         <div class="text-rose-500 drop-shadow-sm">日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div class="text-teal-600 drop-shadow-sm">六</div>
                     </div>
-                    <div id="calendarGrid" class="grid grid-cols-7 gap-2 flex-1 content-start relative"></div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2 flex-1 content-start relative"></div>
                 </div>
-                <div class="w-full md:w-7/12 lg:w-2/3 chart-3d-container p-6 overflow-y-auto h-[40vh] md:h-auto flex flex-col">
-                    <div class="flex justify-between items-end mb-6 pb-4 border-b-2 border-white/50">
-                        <h4 id="selectedDateTitle" class="font-extrabold text-xl text-ocean-primary flex items-center gap-3 drop-shadow-sm">
-                            <i data-lucide="list" class="w-6 h-6 text-sky-500"></i> 請從左側選擇日期
+                <div class="w-full md:w-7/12 lg:w-2/3 chart-3d-container p-4 sm:p-6 overflow-y-auto h-[40vh] md:h-auto flex flex-col">
+                    <div class="flex justify-between items-end mb-4 sm:mb-6 pb-3 sm:pb-4 border-b-2 border-white/50">
+                        <h4 id="selectedDateTitle" class="font-extrabold text-lg sm:text-xl text-ocean-primary flex items-center gap-2 sm:gap-3 drop-shadow-sm w-full">
+                            <i data-lucide="list" class="w-5 h-5 sm:w-6 sm:h-6 text-sky-500 shrink-0"></i> 
+                            <span class="truncate">請從左側選擇日期</span>
                         </h4>
                     </div>
-                    <div id="customRecordsContainer" class="flex-1 pr-2"></div>
+                    <div id="customRecordsContainer" class="flex-1 pr-1 sm:pr-2"></div>
                 </div>
             </div>
         </div>
@@ -637,15 +640,15 @@
     <!-- Modal: 確認清除匯入資料 -->
     <div id="confirmClearImportModal" class="fixed inset-0 bg-slate-900/60 z-[110] hidden items-center justify-center p-4 backdrop-blur-sm no-print">
         <div class="modal-3d w-full max-w-sm overflow-hidden transform transition-all">
-            <div class="p-8 text-center bg-[var(--base-color)]">
-                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 chart-3d-container">
-                    <i data-lucide="alert-triangle" class="w-10 h-10 text-rose-500 drop-shadow-md"></i>
+            <div class="p-6 sm:p-8 text-center bg-[var(--base-color)]">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 chart-3d-container">
+                    <i data-lucide="alert-triangle" class="w-8 h-8 sm:w-10 sm:h-10 text-rose-500 drop-shadow-md"></i>
                 </div>
-                <h3 class="text-2xl font-extrabold text-sky-900 mb-3 drop-shadow-sm">確定要清除匯入資料？</h3>
-                <p class="text-sm text-sky-700 font-bold mb-8 input-3d p-4">此動作將會清除所有「Excel 匯入」的資料，<br>僅保留您手動新增的紀錄。</p>
-                <div class="flex justify-center gap-4">
-                    <button onclick="closeConfirmImportModal()" class="btn-3d-white px-5 py-3 rounded-xl text-sm w-full">取消</button>
-                    <button onclick="executeClearImportData()" class="btn-3d-danger px-5 py-3 rounded-xl text-sm w-full">確認清除</button>
+                <h3 class="text-xl sm:text-2xl font-extrabold text-sky-900 mb-2 sm:mb-3 drop-shadow-sm">確定要清除匯入資料？</h3>
+                <p class="text-sm text-sky-700 font-bold mb-6 sm:mb-8 input-3d p-3 sm:p-4">此動作將會清除所有「Excel 匯入」的資料，<br>僅保留您手動新增的紀錄。</p>
+                <div class="flex justify-center gap-3 sm:gap-4">
+                    <button onclick="closeConfirmImportModal()" class="btn-3d-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm w-full">取消</button>
+                    <button onclick="executeClearImportData()" class="btn-3d-danger px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm w-full">確認清除</button>
                 </div>
             </div>
         </div>
@@ -654,15 +657,15 @@
     <!-- Modal: 確認清除所有資料 -->
     <div id="confirmClearCustomModal" class="fixed inset-0 bg-slate-900/60 z-[110] hidden items-center justify-center p-4 backdrop-blur-sm no-print">
         <div class="modal-3d w-full max-w-sm overflow-hidden transform transition-all">
-            <div class="p-8 text-center bg-[var(--base-color)]">
-                <div class="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 chart-3d-container">
-                    <i data-lucide="alert-triangle" class="w-10 h-10 text-rose-500 drop-shadow-md"></i>
+            <div class="p-6 sm:p-8 text-center bg-[var(--base-color)]">
+                <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6 chart-3d-container">
+                    <i data-lucide="alert-triangle" class="w-8 h-8 sm:w-10 sm:h-10 text-rose-500 drop-shadow-md"></i>
                 </div>
-                <h3 class="text-2xl font-extrabold text-sky-900 mb-3 drop-shadow-sm">確定要重置所有紀錄？</h3>
-                <p class="text-sm text-sky-700 font-bold mb-8 input-3d p-4">此動作將會清除所有「手動新增」與「Excel 匯入」的維修紀錄，且無法復原。</p>
-                <div class="flex justify-center gap-4">
-                    <button onclick="closeConfirmClearCustomModal()" class="btn-3d-white px-5 py-3 rounded-xl text-sm w-full">取消</button>
-                    <button onclick="executeClearCustomData()" class="btn-3d-danger px-5 py-3 rounded-xl text-sm w-full">確認清除</button>
+                <h3 class="text-xl sm:text-2xl font-extrabold text-sky-900 mb-2 sm:mb-3 drop-shadow-sm">確定要重置所有紀錄？</h3>
+                <p class="text-sm text-sky-700 font-bold mb-6 sm:mb-8 input-3d p-3 sm:p-4">此動作將會清除所有「手動新增」與「Excel 匯入」的維修紀錄，且無法復原。</p>
+                <div class="flex justify-center gap-3 sm:gap-4">
+                    <button onclick="closeConfirmClearCustomModal()" class="btn-3d-white px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm w-full">取消</button>
+                    <button onclick="executeClearCustomData()" class="btn-3d-danger px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-sm w-full">確認清除</button>
                 </div>
             </div>
         </div>
@@ -1154,13 +1157,13 @@
 
             document.getElementById('modalTitle').innerHTML = '<div class="badge-3d w-8 h-8"><i data-lucide="plus-circle" class="w-4 h-4"></i></div> 新增維修紀錄';
             const header = document.getElementById('modalHeader');
-            header.className = 'px-6 py-5 flex justify-between items-center modal-header-3d';
+            header.className = 'px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center modal-header-3d';
             
             const footer = document.getElementById('modalFooter');
-            footer.className = 'px-6 py-5 border-t border-white/50 flex justify-end gap-4 modal-header-3d rounded-t-none rounded-b-2xl';
+            footer.className = 'px-4 sm:px-6 py-4 sm:py-5 border-t border-white/50 flex justify-end gap-4 modal-header-3d rounded-t-none rounded-b-2xl';
 
             const submitBtn = document.getElementById('modalSubmitBtn');
-            submitBtn.className = 'btn-3d-primary px-5 py-2.5 rounded-xl text-sm flex items-center gap-2';
+            submitBtn.className = 'btn-3d-primary px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-sm flex items-center gap-2';
             submitBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> 儲存紀錄';
             
             lucide.createIcons({ root: document.getElementById('recordModal') });
@@ -1177,13 +1180,13 @@
 
             document.getElementById('modalTitle').innerHTML = '<div class="badge-3d !bg-amber-500 !border-amber-400 w-8 h-8"><i data-lucide="edit-3" class="w-4 h-4 text-white"></i></div> <span class="text-amber-600">編輯維修紀錄</span>';
             const header = document.getElementById('modalHeader');
-            header.className = 'px-6 py-5 flex justify-between items-center modal-header-3d bg-amber-500/10';
+            header.className = 'px-4 sm:px-6 py-4 sm:py-5 flex justify-between items-center modal-header-3d bg-amber-500/10';
             
             const footer = document.getElementById('modalFooter');
-            footer.className = 'px-6 py-5 border-t border-white/50 flex justify-end gap-4 modal-header-3d bg-amber-500/10 rounded-t-none rounded-b-2xl';
+            footer.className = 'px-4 sm:px-6 py-4 sm:py-5 border-t border-white/50 flex justify-end gap-4 modal-header-3d bg-amber-500/10 rounded-t-none rounded-b-2xl';
 
             const submitBtn = document.getElementById('modalSubmitBtn');
-            submitBtn.className = 'btn-3d-primary !bg-amber-500 !border-amber-400 !shadow-[5px_5px_10px_var(--shadow-dark),-5px_-5px_10px_var(--shadow-light)] active:!shadow-[inset_4px_4px_8px_#d97706,inset_-4px_-4px_8px_#fbbf24] px-5 py-2.5 rounded-xl text-sm flex items-center gap-2';
+            submitBtn.className = 'btn-3d-primary !bg-amber-500 !border-amber-400 !shadow-[5px_5px_10px_var(--shadow-dark),-5px_-5px_10px_var(--shadow-light)] active:!shadow-[inset_4px_4px_8px_#d97706,inset_-4px_-4px_8px_#fbbf24] px-4 sm:px-5 py-2 sm:py-2.5 rounded-xl text-sm flex items-center gap-2';
             submitBtn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i> 確認修改';
 
             lucide.createIcons({ root: document.getElementById('recordModal') });
@@ -1290,43 +1293,43 @@
             const title = document.getElementById('selectedDateTitle');
 
             if (!selectedCalDate) {
-                title.innerHTML = `<i data-lucide="calendar-search" class="w-6 h-6 text-sky-500"></i> 請從左側選擇日期`;
-                container.innerHTML = `<div class="text-center py-12 input-3d mx-8 mt-4 rounded-3xl"><i data-lucide="mouse-pointer-click" class="w-12 h-12 text-sky-300 mx-auto mb-3 drop-shadow-sm"></i><p class="text-sky-700 font-extrabold">點擊日曆上的日期以檢視詳細紀錄</p></div>`;
+                title.innerHTML = `<i data-lucide="calendar-search" class="w-5 h-5 sm:w-6 sm:h-6 text-sky-500 shrink-0"></i> <span class="truncate">請從左側選擇日期</span>`;
+                container.innerHTML = `<div class="text-center py-12 input-3d mx-4 sm:mx-8 mt-4 rounded-3xl"><i data-lucide="mouse-pointer-click" class="w-10 h-10 sm:w-12 sm:h-12 text-sky-300 mx-auto mb-3 drop-shadow-sm"></i><p class="text-sky-700 font-extrabold text-sm sm:text-base">點擊日曆上的日期以檢視詳細紀錄</p></div>`;
                 lucide.createIcons({ root: title }); lucide.createIcons({ root: container });
                 return;
             }
 
-            title.innerHTML = `<i data-lucide="calendar-check" class="w-6 h-6 text-ocean-accent"></i> ${selectedCalDate} 的紀錄`;
+            title.innerHTML = `<i data-lucide="calendar-check" class="w-5 h-5 sm:w-6 sm:h-6 text-ocean-accent shrink-0"></i> <span class="truncate">${selectedCalDate} 的紀錄</span>`;
             lucide.createIcons({ root: title });
 
             const dateRecords = allSavedData.filter(r => r[keys.receiveDate] === selectedCalDate).sort((a, b) => new Date(a[keys.receiveDate] || 0) - new Date(b[keys.receiveDate] || 0));
 
             if (dateRecords.length === 0) {
-                container.innerHTML = `<div class="text-center py-12 input-3d mx-8 mt-4 rounded-3xl"><p class="text-sky-600 font-extrabold">此日期沒有任何維修紀錄</p></div>`;
+                container.innerHTML = `<div class="text-center py-12 input-3d mx-4 sm:mx-8 mt-4 rounded-3xl"><p class="text-sky-600 font-extrabold text-sm sm:text-base">此日期沒有任何維修紀錄</p></div>`;
                 return;
             }
 
             container.innerHTML = dateRecords.map(row => {
-                const sourceBadge = row.isImported ? `<span class="badge-3d !bg-indigo-500 !border-indigo-400 text-[11px] px-2 py-0.5">Excel匯入</span>` : `<span class="badge-3d !bg-teal-500 !border-teal-400 text-[11px] px-2 py-0.5">手動新增</span>`;
+                const sourceBadge = row.isImported ? `<span class="badge-3d !bg-indigo-500 !border-indigo-400 text-[10px] sm:text-[11px] px-2 py-0.5">Excel匯入</span>` : `<span class="badge-3d !bg-teal-500 !border-teal-400 text-[10px] sm:text-[11px] px-2 py-0.5">手動新增</span>`;
                 return `
-                <div class="list-item-3d flex-col xl:flex-row xl:items-center justify-between">
+                <div class="list-item-3d flex-col xl:flex-row xl:items-center justify-between p-3 sm:p-5">
                     <div class="flex-1 min-w-0 w-full">
-                        <div class="flex items-center gap-3 mb-2 flex-wrap">
-                            <span class="input-3d px-3 py-1 font-black text-xs text-ocean-primary shadow-sm">${row[keys.category]}</span>
-                            <span class="font-extrabold text-sky-900 text-lg truncate drop-shadow-sm">${row[keys.model]}</span>
+                        <div class="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                            <span class="input-3d px-2 sm:px-3 py-1 font-black text-[10px] sm:text-xs text-ocean-primary shadow-sm">${row[keys.category]}</span>
+                            <span class="font-extrabold text-sky-900 text-base sm:text-lg truncate drop-shadow-sm">${row[keys.model]}</span>
                             ${sourceBadge}
-                            <span class="text-xs font-mono text-sky-700 font-bold input-3d px-2 py-1 ml-auto xl:ml-2">序號: ${row[keys.serial] || '-'}</span>
+                            <span class="text-[10px] sm:text-xs font-mono text-sky-700 font-bold input-3d px-2 py-1 ml-auto xl:ml-2">序號: ${row[keys.serial] || '-'}</span>
                         </div>
-                        <div class="text-sm text-slate-600 flex flex-wrap gap-x-5 gap-y-2 mt-3 font-medium">
-                            <span class="flex items-center gap-1"><i data-lucide="hash" class="w-4 h-4 text-sky-400"></i> <span class="font-mono">${row[keys.rmaNumber] || '-'}</span></span>
-                            <span class="flex items-center gap-1"><i data-lucide="alert-circle" class="w-4 h-4 text-sky-400"></i> <span class="font-bold text-sky-900">${row[keys.reason] || '-'}</span></span>
-                            <span class="flex items-center gap-1"><i data-lucide="search-code" class="w-4 h-4 text-sky-400"></i> ${row[keys.analysis] || '-'}</span>
-                            <span class="flex items-center gap-1"><i data-lucide="file-text" class="w-4 h-4 text-sky-400"></i> ${row[keys.repairNote] || '-'}</span>
+                        <div class="text-xs sm:text-sm text-slate-600 flex flex-wrap gap-x-3 sm:gap-x-5 gap-y-2 mt-2 sm:mt-3 font-medium">
+                            <span class="flex items-center gap-1"><i data-lucide="hash" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400"></i> <span class="font-mono">${row[keys.rmaNumber] || '-'}</span></span>
+                            <span class="flex items-center gap-1"><i data-lucide="alert-circle" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400"></i> <span class="font-bold text-sky-900">${row[keys.reason] || '-'}</span></span>
+                            <span class="flex items-center gap-1"><i data-lucide="search-code" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400"></i> <span class="break-all">${row[keys.analysis] || '-'}</span></span>
+                            <span class="flex items-center gap-1"><i data-lucide="file-text" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-400"></i> <span class="break-words">${row[keys.repairNote] || '-'}</span></span>
                         </div>
                     </div>
-                    <div class="shrink-0 flex gap-3 w-full xl:w-auto mt-2 xl:mt-0 justify-end">
-                        <button onclick="openEditModal(${row.id})" class="btn-3d-white text-amber-600 px-4 py-2 rounded-xl text-sm flex items-center gap-1.5"><i data-lucide="edit-3" class="w-4 h-4"></i> 編輯</button>
-                        <button onclick="deleteCustomRecord(${row.id})" class="btn-3d-white text-rose-500 px-4 py-2 rounded-xl text-sm flex items-center gap-1.5"><i data-lucide="trash-2" class="w-4 h-4"></i> 刪除</button>
+                    <div class="shrink-0 flex gap-2 sm:gap-3 w-full xl:w-auto mt-3 xl:mt-0 justify-end">
+                        <button onclick="openEditModal(${row.id})" class="btn-3d-white text-amber-600 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5"><i data-lucide="edit-3" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 編輯</button>
+                        <button onclick="deleteCustomRecord(${row.id})" class="btn-3d-white text-rose-500 px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm flex items-center gap-1.5"><i data-lucide="trash-2" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i> 刪除</button>
                     </div>
                 </div>
             `}).join('');
@@ -1640,8 +1643,8 @@
                             <span class="bg-white/20 px-2 py-0.5 rounded shadow-sm flex items-center gap-1"><i data-lucide="tag" class="w-3 h-3"></i> 項目 ${i+1}</span>
                             <span class="bg-white/20 px-2 py-0.5 rounded-md text-[11px] shadow-sm flex items-center gap-1"><i data-lucide="wrench" class="w-3 h-3"></i> ${count}次</span>
                         </div>
-                        <div class="text-sm font-black pl-1 py-1 mt-1 leading-snug drop-shadow-md">${analysisText}</div>
-                        <div class="text-[11px] font-bold pl-1 pb-0.5 opacity-90 flex items-start gap-1 drop-shadow-sm"><i data-lucide="map-pin" class="w-3 h-3 shrink-0 mt-0.5"></i> <span class="break-all">位置: ${locationsStr}</span></div>
+                        <div class="text-sm font-black pl-1 py-1 mt-1 leading-snug drop-shadow-md break-words w-full whitespace-normal">${analysisText}</div>
+                        <div class="text-[11px] font-bold pl-1 pb-0.5 opacity-90 flex items-start gap-1 drop-shadow-sm w-full"><i data-lucide="map-pin" class="w-3 h-3 shrink-0 mt-0.5"></i> <span class="break-words whitespace-normal flex-1">位置: ${locationsStr}</span></div>
                     </div>`;
                 }
                 if (top3TipsContent) {
@@ -1665,7 +1668,7 @@
                 
                 const li = document.createElement('li');
                 li.setAttribute('data-reason', item.reason); 
-                li.className = 'list-item-3d scroll-mt-24 print:scroll-m-0 transition-all duration-500';
+                li.className = 'list-item-3d scroll-mt-24 print:scroll-m-0 transition-all duration-500 flex flex-col items-start w-full min-w-0';
                 li.style.border = `2px solid ${itemColor}`;
                 
                 // 顯示所有的檢修方向
@@ -1673,22 +1676,27 @@
                     .sort((a, b) => b.count - a.count)
                     .map((d, dIndex) => {
                         return `
-                        <div class="analysis-block mt-3 text-sm input-3d p-3 flex flex-wrap items-center gap-x-5 gap-y-2 border border-white/40 font-medium rounded-xl transition-all duration-500" data-analysis="${d.analysis}">
-                            <span class="text-slate-700 w-full sm:w-auto analysis-text">檢修方向: <span class="font-extrabold text-ocean-primary drop-shadow-sm analysis-text">${d.analysis}</span></span>
-                            <span class="text-slate-600 analysis-text">位置: ${d.location}</span><span class="text-slate-600 analysis-text">料號: <span class="font-mono text-sky-700 font-bold analysis-text">${d.partNum}</span></span>
-                            <span class="text-xs font-black text-white ml-auto badge-3d px-2 py-0.5 shadow-sm">${d.count} 次</span>
+                        <div class="analysis-block mt-3 text-sm input-3d p-3 flex flex-wrap items-center gap-x-5 gap-y-2 border border-white/40 font-medium rounded-xl transition-all duration-500 w-full min-w-0" data-analysis="${d.analysis}">
+                            <span class="text-slate-700 w-full lg:w-auto analysis-text flex flex-col sm:flex-row sm:items-center">
+                                檢修方向: <span class="font-extrabold text-ocean-primary drop-shadow-sm analysis-text break-words inline-block mt-1 sm:mt-0 sm:ml-2">${d.analysis}</span>
+                            </span>
+                            <span class="text-slate-600 analysis-text break-words w-full sm:w-auto">位置: ${d.location}</span>
+                            <span class="text-slate-600 analysis-text break-all w-full sm:w-auto">料號: <span class="font-mono text-sky-700 font-bold analysis-text break-all inline-block">${d.partNum}</span></span>
+                            <span class="text-xs font-black text-white sm:ml-auto badge-3d px-2 py-0.5 shadow-sm mt-1 sm:mt-0 w-max">${d.count} 次</span>
                         </div>`;
                 }).join('');
 
                 li.innerHTML = `
-                    <div class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-white" style="background-color: ${itemColor}; box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);"><i data-lucide="lightbulb" class="w-5 h-5"></i></div>
-                    <div class="flex-1 w-full">
-                        <h4 class="font-extrabold text-lg flex justify-between items-center drop-shadow-sm border-b-2 border-white/50 pb-2" style="color: ${itemColor};">
-                            <span class="flex items-center">遇到「${item.reason}」時</span>
-                            <span class="text-xs font-black input-3d px-3 py-1 shadow-sm" style="color: ${itemColor}; border: 1px solid ${itemColor}40;">共 ${item.count} 筆</span>
-                        </h4>
-                        <div class="mt-2">${detailsHtml}</div>
-                    </div>`;
+                    <div class="flex items-center w-full gap-3 min-w-0">
+                        <div class="w-10 h-10 shrink-0 rounded-full flex items-center justify-center text-white" style="background-color: ${itemColor}; box-shadow: 2px 2px 5px var(--shadow-dark), -2px -2px 5px var(--shadow-light);"><i data-lucide="lightbulb" class="w-5 h-5"></i></div>
+                        <div class="flex-1 min-w-0">
+                            <h4 class="font-extrabold text-lg flex flex-wrap gap-2 justify-between items-center drop-shadow-sm border-b-2 border-white/50 pb-2 w-full" style="color: ${itemColor};">
+                                <span class="flex items-center break-words min-w-0 flex-1">遇到「${item.reason}」時</span>
+                                <span class="text-xs font-black input-3d px-3 py-1 shadow-sm shrink-0 whitespace-nowrap" style="color: ${itemColor}; border: 1px solid ${itemColor}40;">共 ${item.count} 筆</span>
+                            </h4>
+                        </div>
+                    </div>
+                    <div class="w-full mt-2 pl-0 sm:pl-12 min-w-0">${detailsHtml}</div>`;
                 ul.appendChild(li);
             });
             container.innerHTML = ''; container.appendChild(ul); lucide.createIcons({ root: container });
